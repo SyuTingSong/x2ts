@@ -17,7 +17,7 @@ abstract class X extends Component {
     protected static $_conf = array(
         'component' => array(
             'router' => array(
-                'class' => '\\x2ts\\Router',
+                'class' => '\\x2ts\\app\\Router',
                 'singleton' => true,
                 'conf' => array(
                     'gzip' => 5,

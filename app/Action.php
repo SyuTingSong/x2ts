@@ -315,7 +315,9 @@ abstract class Action {
         if (isset($args[0]) && is_string($args[0])) {
             $tpl = array_shift($args);
         } else {
-            $tpl = Toolkit::to_snake_case(substr(basename(get_class($this)), 0, -6));
+            $tpl = get_class($this);
+            $tpl = substr($tpl, strrpos($tpl, '\\') + 1, -strlen(X::router()->conf['actionSuffix']));
+            $tpl = Toolkit::to_snake_case($tpl);
         }
         if (isset($args[0]) && is_array($args[0])) {
             $params = array_shift($args);

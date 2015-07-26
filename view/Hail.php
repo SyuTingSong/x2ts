@@ -940,7 +940,7 @@ namespace x2ts\view {
             HailStone::conf(static::$_conf);
         }
 
-        public function init() {
+        public function __construct() {
             $this->hail = new HailStone();
         }
 
