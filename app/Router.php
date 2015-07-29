@@ -21,18 +21,28 @@ class Router extends Component {
      */
     public function route($req, $res) {
         $uri = $req->server('REQUEST_URI');
-        list($path, $query) = explode('?', $uri, 2);
+        list($path) = explode('?', $uri, 2);
         $path = trim(substr($path, strlen($this->conf['baseUri'])), '/');
         if ($path === '')
             $path = trim($this->conf['defaultAction'], '/');
         $pArgs = []; // position based arguments
-        for ($parts = explode('/', $path); count($parts); array_unshift($pArgs, array_pop($parts))) {
+        for (
+            $parts = explode('/', $path), $lastPart=true;
+            count($parts);
+            array_unshift($pArgs, array_pop($parts))
+        ) {
             $p = $parts;
             $classNameWithoutNS = array_pop($p);
+            $suffix = '';
+            if ($lastPart && ($lastDot = strrpos($classNameWithoutNS, '.')) !== false) {
+                $suffix = substr($classNameWithoutNS, $lastDot + 1);
+                $classNameWithoutNS = substr($classNameWithoutNS, 0, $lastDot);
+                $lastPart = false;
+            }
             array_push($p, Toolkit::toCamelCase("$classNameWithoutNS {$this->conf['actionSuffix']}", true));
             $class = 'action\\' . implode('\\', $p);
             if (class_exists($class)) {
-                $action = new $class($req, $res);
+                $action = new $class($req, $res, $suffix);
                 if ($action instanceof Action) {
                     $action->run($pArgs);
                     return true;

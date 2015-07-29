@@ -25,7 +25,7 @@ abstract class X extends Component {
                 ),
             ),
             'db' => array(
-                'class' => '\\x2ts\\SQLite',
+                'class' => '\\x2ts\\db\\SQLite',
                 'singleton' => true,
                 'conf' => array(
                     'filename' => X_RUNTIME_ROOT.'/sqlite.db'

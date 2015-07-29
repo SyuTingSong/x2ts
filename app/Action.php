@@ -26,47 +26,54 @@ abstract class Action {
      */
     protected $response;
 
-    public function __construct($request, $response) {
+    protected $suffix;
+
+    public function __construct($request, $response, $suffix='') {
         $this->request = $request;
         $this->response = $response;
+        $this->suffix = $suffix;
+    }
+
+    private function _run(&$pArgs) {
+        $method = Toolkit::toCamelCase('http ' . strtolower($this->server('REQUEST_METHOD', 'GET')));
+        if (!method_exists($this, $method)) {
+            $this->setStatus(405)->out('Method Not Allowed');
+            return;
+        }
+        $pArgsCount = count($pArgs);
+        $rf = new ReflectionMethod($this, $method);
+        if ($pArgsCount) {
+            $requiredParamsNum = $rf->getNumberOfRequiredParameters();
+            if ($requiredParamsNum <= $pArgsCount) {
+                $rf->invokeArgs($this, $pArgs);
+            } else {
+                $this->setStatus(400)
+                    ->out("expecting $requiredParamsNum parameters while $pArgsCount given.");
+                return;
+            }
+        } else {
+            $params = $rf->getParameters();
+            $args = [];
+            foreach ($params as $param) {
+                /** @var ReflectionParameter $param */
+                $name = $param->getName();
+                if (!is_null($this->request->query($name))) {
+                    $args[] = $this->request->query($name);
+                } else if ($param->isOptional()) {
+                    $args[] = $param->getDefaultValue();
+                } else {
+                    $this->setStatus(400)->out("missing query parameter $name");
+                    return;
+                }
+            }
+            $rf->invokeArgs($this, $args);
+        }
     }
 
     public function run($pArgs = array()) {
         Toolkit::trace("App Start: " . $this->request->server('REQUEST_URI'));
         try {
-            $method = Toolkit::toCamelCase('http ' . strtolower($this->server('REQUEST_METHOD', 'GET')));
-            if (!method_exists($this, $method)) {
-                $this->setStatus(405)->out('Method Not Allowed');
-                return;
-            }
-            $pArgsCount = count($pArgs);
-            $rf = new ReflectionMethod($this, $method);
-            if ($pArgsCount) {
-                $requiredParamsNum = $rf->getNumberOfRequiredParameters();
-                if ($requiredParamsNum <= $pArgsCount) {
-                    $rf->invokeArgs($this, $pArgs);
-                } else {
-                    $this->setStatus(400)
-                        ->out("expecting $requiredParamsNum parameters while $pArgsCount given.");
-                    return;
-                }
-            } else {
-                $params = $rf->getParameters();
-                $args = [];
-                foreach ($params as $param) {
-                    /** @var ReflectionParameter $param */
-                    $name = $param->getName();
-                    if (!is_null($this->request->query($name))) {
-                        $args[] = $this->request->query($name);
-                    } else if ($param->isOptional()) {
-                        $args[] = $param->getDefaultValue();
-                    } else {
-                        $this->setStatus(400)->out("missing query parameter $name");
-                        return;
-                    }
-                }
-                $rf->invokeArgs($this, $args);
-            }
+            $this->_run($pArgs);
         } catch (ApplicationExitException $e) {
             Toolkit::log(sprintf(
                 "%s is thrown at %s(%d) with message: %s\nCall stack:\n%s",

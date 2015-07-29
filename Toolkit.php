@@ -146,7 +146,7 @@ abstract class Toolkit {
         $logLevelColor = array("\x1B[35m", "\x1B[32m", "\x1B[33m", "\x1B[31m");
         if ($logLevel >= X_LOG_LEVEL) {
             if (!is_resource(self::$logFile)) {
-                self::$logFile = fopen("php://stderr", 'a+');
+                self::$logFile = fopen(X_RUNTIME_ROOT.'/app.log', 'a+');
             }
             if (is_callable($msg)) {
                 $logMessage = call_user_func($msg);
