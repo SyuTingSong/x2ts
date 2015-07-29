@@ -57,7 +57,7 @@ class SQLite extends Component implements IDataBase {
             $st = $this->pdo->prepare($sql);
             if($st === false) {
                 $e = $this->pdo->errorInfo();
-                throw new DataBaseException($e[2], $e[0]);
+                throw new DataBaseException($e[2], $e[1]);
             }
             if($st->execute($params)) {
                 $this->_affectedRows = $st->rowCount();
@@ -65,7 +65,7 @@ class SQLite extends Component implements IDataBase {
                 return $st->fetchAll(PDO::FETCH_ASSOC);
             } else {
                 $e = $st->errorInfo();
-                throw new DataBaseException($e[2], $e[0]);
+                throw new DataBaseException($e[2], $e[1]);
             }
         } catch (PDOException $ex) {
             Toolkit::log($ex->getMessage()."\n".$ex->getTraceAsString(), X_LOG_DEBUG, 'xts\Query::query');

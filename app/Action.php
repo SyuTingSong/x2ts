@@ -28,7 +28,7 @@ abstract class Action {
 
     protected $suffix;
 
-    public function __construct($request, $response, $suffix='') {
+    public function __construct($request, $response, $suffix = '') {
         $this->request = $request;
         $this->response = $response;
         $this->suffix = $suffix;
@@ -75,14 +75,11 @@ abstract class Action {
         try {
             $this->_run($pArgs);
         } catch (ApplicationExitException $e) {
-            Toolkit::log(sprintf(
-                "%s is thrown at %s(%d) with message: %s\nCall stack:\n%s",
-                get_class($e),
-                $e->getFile(),
-                $e->getLine(),
-                $e->getMessage(),
-                $e->getTraceAsString()
-            ), $e->getCode(), 'x2ts\Router::route');
+            if ($m = $e->getMessage()) {
+                Toolkit::trace("App end with message " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            } else {
+                Toolkit::trace('App end without message' . "\n" . $e->getTraceAsString());
+            }
         } catch (\Exception $e) {
             Toolkit::log(sprintf(
                 "%s is thrown at %s(%d) with message: %s\nCall stack:\n%s",
@@ -91,7 +88,7 @@ abstract class Action {
                 $e->getLine(),
                 $e->getMessage(),
                 $e->getTraceAsString()
-            ), X_LOG_ERROR, 'x2ts\Router::route');
+            ), X_LOG_ERROR, 'x2ts\app\Action::run');
         }
         $this->response->response();
         Toolkit::trace("App Exit: " . $this->request->server('REQUEST_URI'));
@@ -212,6 +209,12 @@ abstract class Action {
         for ($i = 0; $i < $num; $i++) {
             $this->response->appendBody(strval($args[$i]));
         }
+        return $this;
+    }
+
+    public function jout($data, $options = 0, $depth = 512) {
+        $this->response->setHeader('Content-Type', 'application/json');
+        $this->response->setBody(json_encode($data, $options, $depth));
         return $this;
     }
 
