@@ -37,8 +37,12 @@ abstract class Action {
     private function _run(&$pArgs) {
         $method = Toolkit::toCamelCase('http ' . strtolower($this->server('REQUEST_METHOD', 'GET')));
         if (!method_exists($this, $method)) {
-            $this->setStatus(405)->out('Method Not Allowed');
-            return;
+            if ($this->server('REQUEST_METHOD') === 'HEAD' && method_exists($this, 'httpGet')) {
+                $method = 'httpGet';
+            } else {
+                $this->setStatus(405)->out('Method Not Allowed');
+                return;
+            }
         }
         $pArgsCount = count($pArgs);
         $rf = new ReflectionMethod($this, $method);
@@ -48,7 +52,7 @@ abstract class Action {
                 $rf->invokeArgs($this, $pArgs);
             } else {
                 $this->setStatus(400)
-                    ->out("expecting $requiredParamsNum parameters while $pArgsCount given.");
+                    ->out("Expecting $requiredParamsNum parameters while $pArgsCount given.");
                 return;
             }
         } else {
