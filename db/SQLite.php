@@ -25,7 +25,7 @@ class SQLite extends Component implements IDataBase {
     protected $_pdo;
 
     public function getPdo() {
-        if(empty($this->_pdo)) {
+        if (!$this->_pdo instanceof PDO) {
             $conf = $this->conf;
             $this->_pdo = new PDO ("sqlite:{$conf['filename']}");
         }
@@ -35,15 +35,17 @@ class SQLite extends Component implements IDataBase {
     private function serializeArray($array) {
         $r = '';
         $first = true;
-        foreach($array as $key => $value) {
-            if($first)
+        foreach ($array as $key => $value) {
+            if ($first) {
                 $first = false;
-            else
+            } else {
                 $r .= ',';
+            }
             $r .= "$key=$value";
         }
         return $r;
     }
+
     /**
      * run sql and return the result
      * @param string $sql
@@ -51,15 +53,15 @@ class SQLite extends Component implements IDataBase {
      * @throws DataBaseException
      * @return array
      */
-    public function query($sql, $params=array()) {
-        Toolkit::trace("$sql with params ".$this->serializeArray($params));
+    public function query($sql, $params = array()) {
+        Toolkit::trace("$sql with params " . $this->serializeArray($params));
         try {
             $st = $this->pdo->prepare($sql);
-            if($st === false) {
+            if ($st === false) {
                 $e = $this->pdo->errorInfo();
                 throw new DataBaseException($e[2], $e[1]);
             }
-            if($st->execute($params)) {
+            if ($st->execute($params)) {
                 $this->_affectedRows = $st->rowCount();
                 $this->_lastInsertId = $this->pdo->lastInsertId();
                 return $st->fetchAll(PDO::FETCH_ASSOC);
@@ -68,7 +70,7 @@ class SQLite extends Component implements IDataBase {
                 throw new DataBaseException($e[2], $e[1]);
             }
         } catch (PDOException $ex) {
-            Toolkit::log($ex->getMessage()."\n".$ex->getTraceAsString(), X_LOG_DEBUG, 'xts\Query::query');
+            Toolkit::log($ex->getMessage() . "\n" . $ex->getTraceAsString(), X_LOG_DEBUG, 'xts\Query::query');
             throw new DataBaseException($ex->getMessage(), $ex->getCode());
         }
     }
