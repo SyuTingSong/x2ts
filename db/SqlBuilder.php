@@ -154,8 +154,8 @@ class SqlBuilder {
     }
 
     /**
-     * @internal param int $offset
-     * @internal param int $length
+     * @param int $offset
+     * @param int $length
      * @return SqlBuilder
      */
     public function limit() {
