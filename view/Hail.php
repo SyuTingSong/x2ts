@@ -919,7 +919,7 @@ namespace x2ts\view {
     use HailStone;
     use x2ts\Component;
     use x2ts\Toolkit;
-    use x2ts\X;
+    use x2ts\ComponentFactory;
 
     class Hail extends Component implements IView {
         /**
@@ -978,7 +978,7 @@ namespace x2ts\view {
                 /**
                  * @var \x2ts\cache\ICache $cache
                  */
-                $cache = X::getComponent($this->conf['cacheId']);
+                $cache = ComponentFactory::getComponent($this->conf['cacheId']);
                 $key = "html|$tpl|$cacheId";
                 if ($html = $cache->get($key)) {
                     return $html;

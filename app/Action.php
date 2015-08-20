@@ -8,7 +8,7 @@ use x2ts\http\Request;
 use x2ts\http\Response;
 use x2ts\TGetterSetter;
 use x2ts\Toolkit;
-use x2ts\X;
+use x2ts\ComponentFactory;
 
 /**
  * Class Action
@@ -301,7 +301,7 @@ abstract class Action {
      * @return $this
      */
     public function setLayout($layout) {
-        X::view()->setLayout($layout);
+        ComponentFactory::view()->setLayout($layout);
         return $this;
     }
 
@@ -312,7 +312,7 @@ abstract class Action {
      * @return $this
      */
     public function setTitle($title) {
-        X::view()->setPageTitle($title);
+        ComponentFactory::view()->setPageTitle($title);
         return $this;
     }
 
@@ -330,7 +330,7 @@ abstract class Action {
             $tpl = array_shift($args);
         } else {
             $tpl = get_class($this);
-            $tpl = substr($tpl, strrpos($tpl, '\\') + 1, -strlen(X::router()->conf['actionSuffix']));
+            $tpl = substr($tpl, strrpos($tpl, '\\') + 1, -strlen(ComponentFactory::router()->conf['actionSuffix']));
             $tpl = Toolkit::to_snake_case($tpl);
         }
         if (isset($args[0]) && is_array($args[0])) {
@@ -344,7 +344,7 @@ abstract class Action {
             $cacheId = null;
         }
 
-        return X::view()->render($tpl, $params, $cacheId);
+        return ComponentFactory::view()->render($tpl, $params, $cacheId);
     }
 
     /**

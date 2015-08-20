@@ -1,19 +1,22 @@
 <?php
 
 namespace x2ts;
+
 use InvalidArgumentException;
 use ReflectionClass;
+use x2ts\db\orm\Model;
 
 /**
- * Class X2
+ * Class ComponentFactory
  * @package x2ts
  * @method static app\Router router()
- * @method static db\SQLite db()
+ * @method static db\IDataBase db()
+ * @method static db\orm\Model model($modelName)
  * @method static cache\MCache cache()
  * @method static cache\CCache cc()
  * @method static view\Hail view()
  */
-abstract class X extends Component {
+abstract class ComponentFactory extends Component {
     protected static $_conf = array(
         'component' => array(
             'router' => array(
@@ -28,8 +31,26 @@ abstract class X extends Component {
                 'class' => '\\x2ts\\db\\SQLite',
                 'singleton' => true,
                 'conf' => array(
-                    'filename' => X_RUNTIME_ROOT.'/sqlite.db'
+                    'filename' => X_RUNTIME_ROOT . '/sqlite.db'
                 ),
+            ),
+            'model' => array(
+                'class' => '\x2ts\db\orm\Model',
+                'singleton' => false,
+                'conf' => array(
+                    'tablePrefix' => '',
+                    'dbId' => 'db',
+                    'enableCacheByDefault' => false,
+                    'schemaConf' => array(
+                        'schemaCacheId' => 'cc',
+                        'useSchemaCache' => false,
+                        'schemaCacheDuration' => 0,
+                    ),
+                    'cacheConf' => array(
+                        'cacheId' => 'cache',
+                        'duration' => 60,
+                    ),
+                )
             ),
             'cache' => array(
                 'class' => '\\x2ts\\MCache',
@@ -52,9 +73,9 @@ abstract class X extends Component {
                 'class' => '\\x2ts\\view\\Hail',
                 'singleton' => true,
                 'conf' => array(
-                    'tpl_dir' => X_PROJECT_ROOT.'/protected/view',
+                    'tpl_dir' => X_PROJECT_ROOT . '/protected/view',
                     'tpl_ext' => 'html',
-                    'compile_dir' => X_RUNTIME_ROOT.'/compiled_template',
+                    'compile_dir' => X_RUNTIME_ROOT . '/compiled_template',
                     'enable_clip' => false,
                     'cacheId' => 'cc', // string to cache component id or false to disable cache
                     'cacheDuration' => 60, // page cache duration, second
@@ -110,6 +131,9 @@ abstract class X extends Component {
         $rfClass = new ReflectionClass($class);
         if ($rfClass->isSubclassOf('x2ts\IComponent')) {
             $rfClass->getMethod("conf")->invoke(null, $conf);
+            if ($rfClass->hasMethod('getInstance')) {
+                return $rfClass->getMethod('getInstance')->invokeArgs(null, $args);
+            }
             return $rfClass->newInstanceArgs($args);
         }
         throw new InvalidArgumentException("class $class is not an instance of x2ts\\IComponent");

@@ -11,16 +11,13 @@ namespace x2ts\db\orm;
 
 use x2ts\TConfig;
 use x2ts\TGetterSetter;
-use x2ts\X;
+use x2ts\ComponentFactory;
 
 class CachedModel {
     use TConfig;
     use TGetterSetter;
 
-    protected static $_conf = array(
-        'cacheId' => 'cache',
-        'duration' => 300,
-    );
+    protected static $_conf = array();
 
     /**
      * @var Model
@@ -40,7 +37,7 @@ class CachedModel {
         $this->_model = $model;
         $this->_duration = is_null($duration) ? $this->conf['duration'] : $duration;
         $this->_key = $key;
-        $this->_cache = X::getComponent($this->conf['cacheId']);
+        $this->_cache = ComponentFactory::getComponent($this->conf['cacheId']);
     }
 
     /**

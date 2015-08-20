@@ -12,7 +12,7 @@ use x2ts\db\SqlBuilder;
 use x2ts\MethodNotImplementException;
 use x2ts\ObjectIterator;
 use x2ts\Toolkit;
-use x2ts\X;
+use x2ts\ComponentFactory;
 
 /**
  * Class Model
@@ -88,7 +88,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
             'useSchemaCache' => false,
             'schemaCacheDuration' => 0,
         ),
-        'moldyConf' => array(
+        'cacheConf' => array(
             'cacheId' => 'cache',
             'duration' => 60,
         ),
@@ -100,7 +100,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     private $_builder;
 
     public function __sleep() {
-        return array('_modelName', '_properties', '_modified', '_relations');
+        return array('_modelName', '_properties', '_modified');
     }
 
     public function __wakeUp() {
@@ -109,10 +109,9 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
 
     /**
      * @param string $modelName
-     * @param string $namespace
      * @return Model
      */
-    public static function pick($modelName) {
+    public static function getInstance($modelName) {
         $className = "\\model\\" . Toolkit::toCamelCase($modelName, true);
         if (class_exists($className)) {
             return new $className($modelName);
@@ -123,7 +122,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
 
     public static function conf($conf = array()) {
         parent::conf($conf);
-        CachedModel::conf(static::$_conf['moldyConf']);
+        CachedModel::conf(static::$_conf['cacheConf']);
     }
 
     /**
@@ -132,8 +131,8 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      */
     public function load($pk) {
         $r = $this->_builder->select('*')
-            ->from($this->orange->tableName)
-            ->where("`{$this->PKName}`=:pk")
+            ->from($this->tableName)
+            ->where("`{$this->pkName}`=:pk")
             ->query(array(':pk' => $pk));
         if (!empty($r)) {
             return $this->setupOne($r);
@@ -451,7 +450,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return IDataBase
      */
     protected function getDb() {
-        return X::getComponent($this->conf['dbId']);
+        return ComponentFactory::getComponent($this->conf['dbId']);
     }
 
     public function __get($name) {
@@ -504,12 +503,12 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @param array $params
      * @param int $offset
      * @param int $limit
-     * @return \xts\Orange|array|null
+     * @return Model|array|null
      */
     protected function loadRelationObj($name, $condition = null, $params = array(), $offset = 0, $limit = 200) {
         /** @var Relation $relation */
         $relation = $this->relations[$name];
-        $model = Model::pick($relation->foreignModelName);
+        $model = Model::getInstance($relation->foreignModelName);
         switch (true) {
             case $relation instanceof BelongToRelation:
                 $pk = $this->_properties[$relation->property];
@@ -601,17 +600,14 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return $this
      */
     public function assign($array) {
-        if (isset($array[$this->tableSchema->keys['PK']])) {
-            $this->load($array[$this->tableSchema->keys['PK']]);
+        if (isset($array[$this->pkName]) && $this->isNewRecord) {
+            $this->load($array[$this->pkName]);
         }
 
         foreach ($this->_properties as $key => $value) {
-            if ($key == $this->tableSchema->keys['PK'])
-                continue;
             if (isset($array[$key]))
                 $this->_propertySet($key, $array[$key]);
         }
-
         return $this;
     }
 

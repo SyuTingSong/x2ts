@@ -5,9 +5,11 @@ namespace x2ts\app;
 use x2ts\Component;
 use x2ts\http\Request;
 use x2ts\http\Response;
+use x2ts\TEventDispatcher;
 use x2ts\Toolkit;
 
 class Router extends Component {
+    use TEventDispatcher;
     protected static $_conf = array(
         'defaultAction' => '/index',
         'actionSuffix' => 'Action',
@@ -21,6 +23,9 @@ class Router extends Component {
      */
     public function route($req, $res) {
         $uri = $req->server('REQUEST_URI');
+        if ($this->dispatch('PreRoute', $uri) === false) {
+            return false;
+        }
         list($path) = explode('?', $uri, 2);
         $path = trim(substr($path, strlen($this->conf['baseUri'])), '/');
         if ($path === '')
@@ -44,6 +49,9 @@ class Router extends Component {
             if (class_exists($class)) {
                 $action = new $class($req, $res, $suffix);
                 if ($action instanceof Action) {
+                    if ($this->dispatch('PostRoute', $class, $suffix) === false) {
+                        return false;
+                    }
                     $action->run($pArgs);
                     return true;
                 }
@@ -54,5 +62,15 @@ class Router extends Component {
         $res->response();
         Toolkit::trace("Action not fount: $path");
         return false;
+    }
+
+    public function onPreRoute($callback, $state=null) {
+        $this->on('PreRoute', $callback, $state);
+        return $this;
+    }
+
+    public function onPostRoute($callback, $state=null) {
+        $this->on('PostRoute', $callback, $state);
+        return $this;
     }
 }

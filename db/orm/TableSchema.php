@@ -6,7 +6,7 @@ use x2ts\Component;
 use x2ts\db\IDataBase;
 use x2ts\db\MySQL;
 use x2ts\Toolkit;
-use x2ts\X;
+use x2ts\ComponentFactory;
 
 
 /**
@@ -72,7 +72,7 @@ abstract class TableSchema extends Component {
     }
 
     public function getCache() {
-        return X::getComponent($this->conf['schemaCacheId']);
+        return ComponentFactory::getComponent($this->conf['schemaCacheId']);
     }
 
     public abstract function load();
