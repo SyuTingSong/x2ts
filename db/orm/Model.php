@@ -134,8 +134,8 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
             ->from($this->tableName)
             ->where("`{$this->pkName}`=:pk")
             ->query(array(':pk' => $pk));
-        if (!empty($r)) {
-            return $this->setupOne($r);
+        if (count($r)) {
+            return $this->setupOne($r[0]);
         }
         return null;
     }
@@ -239,21 +239,21 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return array
      */
     public function many($condition = null, $params = array(), $offset = null, $limit = null) {
-        $this->builder
+        $this->_builder
             ->select('*')
-            ->from($this->orange->tableName);
+            ->from($this->tableName);
 
         if (!empty($condition))
-            $this->orange->builder->where($condition, $params);
+            $this->_builder->where($condition, $params);
 
         if (!is_null($offset)) {
             if (is_null($limit)) {
-                $this->orange->builder->limit($offset);
+                $this->_builder->limit($offset);
             } else {
-                $this->orange->builder->limit($offset, $limit);
+                $this->_builder->limit($offset, $limit);
             }
         }
-        $r = $this->orange->builder->query();
+        $r = $this->_builder->query();
         if (empty($r)) {
             return array();
         } else {
@@ -506,12 +506,13 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return Model|array|null
      */
     protected function loadRelationObj($name, $condition = null, $params = array(), $offset = 0, $limit = 200) {
+        Toolkit::trace('Loading relation object');
         /** @var Relation $relation */
         $relation = $this->relations[$name];
         $model = Model::getInstance($relation->foreignModelName);
         switch (true) {
             case $relation instanceof BelongToRelation:
-                $pk = $this->_properties[$relation->property];
+                $pk = $this->pk;
                 Toolkit::trace("Load belonging object {$relation->name} with PK value is {$pk}");
                 return $model->load($pk);
             case $relation instanceof HasOneRelation:
@@ -519,7 +520,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
                 if ($condition)
                     $c .= " AND $condition";
                 $p = array(
-                        ':_fid' => $this->_properties[$this->tableSchema->keys['PK']]
+                        ':_fid' => $this->pk
                     ) + $params;
                 Toolkit::trace("Load relation object {$relation->name}");
                 return $model->one($c, $p);
@@ -528,7 +529,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
                 if ($condition)
                     $c .= " AND $condition";
                 $p = array(
-                        ':_fid' => $this->_properties[$this->tableSchema->keys['PK']]
+                        ':_fid' => $this->pk
                     ) + $params;
                 Toolkit::trace("Load relation objects {$relation->name}");
                 return $model->many($c, $p, $offset, $limit);

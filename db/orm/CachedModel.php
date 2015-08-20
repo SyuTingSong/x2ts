@@ -12,6 +12,7 @@ namespace x2ts\db\orm;
 use x2ts\TConfig;
 use x2ts\TGetterSetter;
 use x2ts\ComponentFactory;
+use x2ts\Toolkit;
 
 class CachedModel {
     use TConfig;
