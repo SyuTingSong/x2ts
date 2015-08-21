@@ -23,7 +23,7 @@ abstract class Relation implements ICompilable{
 
     /**
      * @param array $properties
-     * @return \xts\Compilable
+     * @return \x2ts\ICompilable
      */
     public static function __set_state($properties) {
         return new static($properties);
