@@ -32,4 +32,10 @@ abstract class Component implements IComponent {
     public function getConf() {
         return static::$_conf;
     }
+
+    public function __construct() {
+        if (method_exists($this, 'init')) {
+            call_user_func(array($this, 'init'));
+        }
+    }
 }
