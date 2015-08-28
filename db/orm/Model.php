@@ -513,7 +513,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
         $model = Model::getInstance($relation->foreignModelName);
         switch (true) {
             case $relation instanceof BelongToRelation:
-                $pk = $this->pk;
+                $pk = $this->properties[$relation->property];
                 Toolkit::trace("Load belonging object {$relation->name} with PK value is {$pk}");
                 return $model->load($pk);
             case $relation instanceof HasOneRelation:
