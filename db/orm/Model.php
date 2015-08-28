@@ -122,6 +122,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
 
     public static function conf($conf = array()) {
         parent::conf($conf);
+        TableSchema::conf(static::$_conf['schemaConf']);
         CachedModel::conf(static::$_conf['cacheConf']);
     }
 
@@ -347,10 +348,10 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     public function __construct($modelName) {
         $this->_builder = new SqlBuilder($this->db);
         $this->_modelName = $modelName;
-        $this->initDefaultProperties();
+        parent::__construct();
     }
 
-    private function initDefaultProperties() {
+    private function init() {
         $columns = $this->getTableSchema()->getColumns();
         foreach ($columns as $column) {
             $this->_properties[$column->name] = $column->defaultValue;

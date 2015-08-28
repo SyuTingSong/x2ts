@@ -85,9 +85,9 @@ abstract class TableSchema extends Component {
         if(!isset(static::$tables[$this->name])) {
             if($this->conf['useSchemaCache']) {
                 $key = $this->getHash();
-                $tableSchema = $this->cache->get($key);
-                if($tableSchema instanceof TableSchema) {
-                    static::$tables[$this->name] = $tableSchema;
+                $tableInfo = $this->cache->get($key);
+                if(!empty($tableInfo)) {
+                    static::$tables[$this->name] = $tableInfo;
                     return;
                 }
             }
@@ -102,6 +102,6 @@ abstract class TableSchema extends Component {
     public function __construct($name, IDataBase $db) {
         $this->name = $name;
         $this->db = $db;
-        $this->init();
+        parent::__construct();
     }
 }

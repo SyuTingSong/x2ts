@@ -942,6 +942,7 @@ namespace x2ts\view {
 
         public function __construct() {
             $this->hail = new HailStone();
+            parent::__construct();
         }
 
         /**
