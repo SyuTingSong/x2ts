@@ -351,7 +351,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
         parent::__construct();
     }
 
-    private function init() {
+    protected function init() {
         $columns = $this->getTableSchema()->getColumns();
         foreach ($columns as $column) {
             $this->_properties[$column->name] = $column->defaultValue;
