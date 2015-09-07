@@ -155,4 +155,8 @@ class Request {
     public function getServer() {
         return $_SERVER;
     }
+
+    public function getRawContent() {
+        return file_get_contents("php://input");
+    }
 }
