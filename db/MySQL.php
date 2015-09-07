@@ -7,6 +7,10 @@ use PDOException;
 use x2ts\Component;
 use x2ts\Toolkit;
 
+define('MYSQL_ERR_DUP_ENTRY', 1062);
+define('MYSQL_ERR_FK_PREVENT_DEL', 1451);
+define('MYSQL_ERR_FK_PREVENT_INS', 1452);
+
 /**
  * Class Query
  * @package xts
@@ -78,7 +82,7 @@ class MySQL extends Component implements IDataBase {
             $st = $this->pdo->prepare($sql);
             if ($st === false) {
                 $e = $this->pdo->errorInfo();
-                throw new DataBaseException($e[2], $e[0]);
+                throw new DataBaseException($e[2], $e[1]);
             }
             if ($st->execute($params)) {
                 $this->_affectedRows = $st->rowCount();
@@ -86,11 +90,11 @@ class MySQL extends Component implements IDataBase {
                 return $st->fetchAll(PDO::FETCH_ASSOC);
             } else {
                 $e = $st->errorInfo();
-                throw new DataBaseException($e[2], $e[0]);
+                throw new DataBaseException($e[2], $e[1]);
             }
         } catch (PDOException $ex) {
             Toolkit::log($ex->getMessage() . "\n" . $ex->getTraceAsString(), X_LOG_DEBUG, 'xts\Query::query');
-            throw new DataBaseException($ex->getMessage(), $ex->getCode());
+            throw new DataBaseException($ex->getMessage(), $ex->getCode(), $ex);
         }
     }
 
