@@ -205,9 +205,10 @@ abstract class Action {
     }
 
     /**
+     * @param string $words
      * @return $this
      */
-    public function out() {
+    public function out($words) {
         $num = func_num_args();
         $args = func_get_args();
         for ($i = 0; $i < $num; $i++) {
