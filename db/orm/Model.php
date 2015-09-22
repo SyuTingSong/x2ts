@@ -332,6 +332,10 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return CachedModel
      */
     public function cache($duration = null, $key = null) {
+        if (is_string($duration) && is_null($key) && !is_numeric($duration)) {
+            $key = $duration;
+            $duration = null;
+        }
         return new CachedModel($this, $duration, $key);
     }
 
