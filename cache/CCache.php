@@ -80,6 +80,13 @@ class CCache extends Component implements ICache {
      * @return void
      */
     public function flush() {
-        throw new MethodNotImplementException("CCache not supports flush");
+        $files = scandir($this->conf['cacheDir']);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') continue;
+            $f = realpath($this->conf['cacheDir'] . DIRECTORY_SEPARATOR . $file);
+            if (is_file($f)) {
+                unlink($f);
+            }
+        }
     }
 }

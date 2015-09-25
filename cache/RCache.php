@@ -61,7 +61,7 @@ class RCache extends Component implements  ICache {
      */
     public function remove($key) {
         Toolkit::trace("RCache remove '$key'");
-        $this->_cache->delete($key);
+        $this->cache->delete($key);
     }
 
     /**
@@ -69,7 +69,7 @@ class RCache extends Component implements  ICache {
      */
     public function flush() {
         Toolkit::trace("RCache flush");
-        $this->_cache->flushDB();
+        $this->cache->flushDB();
     }
 
     /**
