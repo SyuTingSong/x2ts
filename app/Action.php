@@ -354,7 +354,7 @@ abstract class Action {
      * @param string $tpl
      * @param array $params
      * @param string $cacheId
-     * @return string
+     * @return $this
      */
     public function display() {
         return $this->out(call_user_func_array([$this, 'render'], func_get_args()));
