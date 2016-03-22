@@ -995,6 +995,9 @@ namespace x2ts\view {
 
         private function realRender($tpl, $params = array()) {
             $this->assign('_content_template', $tpl);
+            if (!isset($this->hail->var['_page_title'])) {
+                $this->hail->assign('_page_title', '');
+            }
             $this->assignAll($params);
             ob_start();
             $this->hail->draw($this->_layout);
