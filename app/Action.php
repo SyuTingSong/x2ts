@@ -239,48 +239,40 @@ abstract class Action {
     }
 
     /**
-     * @param $ms
+     * @param string $msg
      * @param null $data
      * @param null $goto
      * @return $this
      */
-    public function jsonEcho($msg, $data = null, $goto = null) {
-        $this->jsonOutput(1, $msg, $data, $goto);
+    public function jsonEcho($msg = null, $data = null, $goto = null) {
+        $this->jsonOutput(0, $msg, $data, $goto);
         return $this;
     }
 
     /**
      * output a json encoded object to report an error
      *
+     * @param int $code
      * @param string $msg The human readable error message
      * @param mixed $data [optional]
      * @param string $goto [optional] The target url to redirect
      * @return $this
      */
-    public function jsonError($msg, $data = null, $goto = null) {
-        $this->jsonOutput(0, $msg, $data, $goto);
+    public function jsonError($code, $msg = null, $data = null, $goto = null) {
+        $this->jsonOutput($code, $msg, $data, $goto);
         return $this;
     }
 
-    private function jsonOutput($ok, $msg, $data, $goto) {
-        $res = array('OK' => $ok);
-        $res['message'] = $msg;
+    private function jsonOutput($code, $msg, $data, $goto) {
+        $res = array('code' => $code);
+        if (isset($msg))
+            $res['message'] = strval($msg);
         if (isset($data))
             $res['data'] = $data;
         if (!empty($goto))
             $res['goto'] = $goto;
 
         $this->setHeader('Content-Type', 'application/json')->out(json_encode($res));
-    }
-
-    /**
-     * @param $name
-     * @param $value
-     * @return $this
-     */
-    public function setSession($name, $value) {
-        $_SESSION[$name] = $value;
-        return $this;
     }
 
     /**
