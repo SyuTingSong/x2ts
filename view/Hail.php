@@ -278,12 +278,12 @@ namespace {
                 'noparse_close' => '(\{\/noparse\})',
                 'ignore' => '(\{ignore\}|\{\*)',
                 'ignore_close' => '(\{\/ignore\}|\*\})',
-                'include' => '(\{include="[^"]*"(?: cache="[^"]*")?\})',
+                'include' => '(\{include(?: file){0,1}="[^"]*"(?: cache="[^"]*")?\})',
                 'template_info' => '(\{\$template_info\})',
-                'function' => '(\{function="(\w*?)(?:.*?)"\})',
-                'clipdef' => '(\{clipdef="\w*"\})',
+                'function' => '(\{function(?: name){0,1}="(\w*?)(?:.*?)"\})',
+                'clipdef' => '(\{clipdef(?: name){0,1}="\w*"\})',
                 'clipdef_close' => '(\{\/clipdef\})',
-                'clip' => '(\{clip="\w*"\})',
+                'clip' => '(\{clip(?: name){0,1}="\w*"\})',
             );
 
             $tag_regexp = "/" . join("|", $tag_regexp) . "/";
@@ -338,8 +338,7 @@ namespace {
                     $no_parse_is_open = true;
 
                 //include tag
-                elseif (preg_match('/\{include="([^"]*)"(?: cache="([^"]*)"){0,1}\}/', $html, $code)) {
-
+                elseif (preg_match('/\{include(?: file){0,1}="([^"]*)"(?: cache="([^"]*)"){0,1}\}/', $html, $code)) {
                     //variables substitution
                     $include_var = $this->var_replace($code[1], $left_delimiter = null, $right_delimiter = null, $php_left_delimiter = '".', $php_right_delimiter = '."', $loop_level);
 
@@ -430,7 +429,7 @@ namespace {
                     $compiled_code .= '<?php } ?>';
 
                 } //function
-                elseif (preg_match('/\{function="(\w*)(.*?)"\}/', $html, $code)) {
+                elseif (preg_match('/\{function(?: name){0,1}="(\w*)(.*?)"\}/', $html, $code)) {
 
                     //tag
                     $tag = $code[0];
@@ -458,7 +457,7 @@ namespace {
                     //if code
                     $compiled_code .= '<?php echo "<pre>"; print_r( $this->var ); echo "</pre>"; ?>';
                 } // record clip
-                elseif (self::$enable_clip && preg_match('/\{clipdef="(\w*)"\}/', $html, $code)) {
+                elseif (self::$enable_clip && preg_match('/\{clipdef(?: name){0,1}="(\w*)"\}/', $html, $code)) {
                     if (empty($code[1])) {
                         $e = new RainTpl_SyntaxException('You must define the clip name for clipdef in ' . $this->tpl['tpl_filename'] . ' template');
                         throw $e->setTemplateFile($this->tpl['tpl_filename']);
@@ -476,7 +475,7 @@ namespace {
 
                     $compiled_code .= '<?php self::$clips["' . $name . '"] .= ob_get_contents(); ob_end_clean();?>';
                 } // clip output
-                elseif (self::$enable_clip && preg_match('/\{clip="(\w*)"\}/', $html, $code)) {
+                elseif (self::$enable_clip && preg_match('/\{clip(?: name){0,1}="(\w*)"\}/', $html, $code)) {
                     $name = $code[1];
                     if (empty($name)) {
                         $e = new RainTpl_SyntaxException('You must provide clip name in ' . $this->tpl['tpl_filename'] . ' template');
@@ -809,6 +808,8 @@ namespace {
             $search = $replace = array();
             foreach (self::$clips as $name => $part) {
                 $search[] = '{clip="' . $name . '"}';
+                $replace[] = $part;
+                $search[] = '{clip name="' . $name . '"}';
                 $replace[] = $part;
             }
             $html = str_replace($search, $replace, $html);
