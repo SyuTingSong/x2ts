@@ -323,8 +323,15 @@ abstract class Action {
             $tpl = array_shift($args);
         } else {
             $tpl = get_class($this);
-            $tpl = substr($tpl, strrpos($tpl, '\\') + 1, -strlen(ComponentFactory::router()->conf['actionSuffix']));
-            $tpl = Toolkit::to_snake_case($tpl);
+            $paths = explode('\\', $tpl);
+            array_shift($paths);
+            $className = array_pop($paths);
+            $basename = substr($className, 0, -strlen(ComponentFactory::router()->conf['actionSuffix']));
+            array_push($paths, $basename);
+            foreach ($paths as &$path) {
+                $path = Toolkit::to_snake_case($path);
+            }
+            $tpl = implode(DIRECTORY_SEPARATOR, $paths);
         }
         if (isset($args[0]) && is_array($args[0])) {
             $params = array_shift($args);
