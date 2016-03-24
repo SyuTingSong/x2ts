@@ -15,15 +15,18 @@ abstract class Component implements IComponent {
      * @var array
      */
     protected static $_conf;
+    protected static $_confObject;
 
     /**
      * @param array|null $conf
-     * @return void|array
+     * @return void|\stdClass
      */
     public static function conf($conf = null) {
         if (!is_null($conf) && is_array($conf))
             Toolkit::override(static::$_conf, $conf);
-        return static::$_conf;
+        if (empty(static::$_confObject))
+            static::$_confObject = json_decode(json_encode(static::$_conf));
+        return static::$_confObject;
     }
 
     /**
