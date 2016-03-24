@@ -15,14 +15,19 @@ class Internationalization extends Component {
         'default' => 'En',
     );
     protected static $messages = array();
-    public static function getInstance() {
+
+    public static function getInstance($lang = null) {
+        if (!empty($lang)) {
+            $class = "\\lang\\$lang";
+            return new $class();
+        }
         preg_match_all(
             '#([\w\-, ]+); ?q=([01]\.\d)#',
             $_SERVER['HTTP_ACCEPT_LANGUAGE'],
             $m,
             PREG_SET_ORDER
         );
-        usort($m, function($a, $b) {
+        usort($m, function ($a, $b) {
             $a = floatval($a[2]) * 100;
             $b = floatval($b[2]) * 100;
             return $b - $a;
