@@ -240,8 +240,8 @@ abstract class Action {
 
     /**
      * @param string $msg
-     * @param null $data
-     * @param null $goto
+     * @param array $data
+     * @param string $goto
      * @return $this
      */
     public function jsonEcho($msg = null, $data = null, $goto = null) {

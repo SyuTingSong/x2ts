@@ -150,8 +150,13 @@ abstract class Toolkit {
             }
             if (is_callable($msg)) {
                 $logMessage = call_user_func($msg);
+            } elseif (is_array($msg) || is_object($msg)) {
+                ob_start();
+                var_dump($msg);
+                $logMessage = ob_get_contents();
+                ob_end_clean();
             } else {
-                $logMessage = $msg;
+                $logMessage = strval($msg);
             }
             fprintf(
                 self::$logFile, "%s[%s][%s][%s]%s\x1B[0m\n",
