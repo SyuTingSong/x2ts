@@ -49,7 +49,7 @@ class Router extends Component {
             if (class_exists($class)) {
                 $action = new $class($req, $res, $suffix);
                 if ($action instanceof Action) {
-                    if ($this->dispatch('PostRoute', $class, $suffix) === false) {
+                    if ($this->dispatch('PostRoute', $action, $suffix) === false) {
                         return false;
                     }
                     $action->run($pArgs);
