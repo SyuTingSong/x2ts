@@ -19,14 +19,14 @@ abstract class Action {
     /**
      * @var Request @req
      */
-    protected $request;
+    public $request;
 
     /**
      * @var Response $response
      */
-    protected $response;
+    public $response;
 
-    protected $suffix;
+    public $suffix;
 
     public function __construct($request, $response, $suffix = '') {
         $this->request = $request;
@@ -235,6 +235,7 @@ abstract class Action {
      * @throws ApplicationExitException
      */
     public function end($msg = '', $logLevel = X_LOG_DEBUG) {
+        $this->response->response();
         throw new ApplicationExitException($msg, $logLevel);
     }
 
