@@ -235,7 +235,6 @@ abstract class Action {
      * @throws ApplicationExitException
      */
     public function end($msg = '', $logLevel = X_LOG_DEBUG) {
-        $this->response->response();
         throw new ApplicationExitException($msg, $logLevel);
     }
 
