@@ -326,7 +326,12 @@ abstract class Action {
             $paths = explode('\\', $tpl);
             array_shift($paths);
             $className = array_pop($paths);
-            $basename = substr($className, 0, -strlen(ComponentFactory::router()->conf['actionSuffix']));
+            $actionSuffix = ComponentFactory::router()->conf['actionSuffix'];
+            if (strstr($className, $actionSuffix) === $actionSuffix) {
+                $basename = substr($className, 0, -strlen($actionSuffix));
+            } else {
+                $basename = $className;
+            }
             array_push($paths, $basename);
             foreach ($paths as &$path) {
                 $path = Toolkit::to_snake_case($path);
