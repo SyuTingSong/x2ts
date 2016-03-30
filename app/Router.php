@@ -13,6 +13,7 @@ class Router extends Component {
     protected static $_conf = array(
         'defaultAction' => '/index',
         'actionSuffix' => 'Action',
+        'actionSuffixOmissible' => false,
         'baseUri' => '/',
     );
 
@@ -46,6 +47,12 @@ class Router extends Component {
             }
             array_push($p, Toolkit::toCamelCase("$classNameWithoutNS {$this->conf['actionSuffix']}", true));
             $class = 'action\\' . implode('\\', $p);
+            if ($this->conf['actionSuffixOmissible'] && !class_exists($class)) {
+                array_pop($p);
+                array_push($p, Toolkit::toCamelCase($classNameWithoutNS, true));
+                $class = 'action\\' . implode('\\', $p);
+            }
+
             if (class_exists($class)) {
                 $action = new $class($req, $res, $suffix);
                 if ($action instanceof Action) {
@@ -60,7 +67,7 @@ class Router extends Component {
         $res->setHeader('Status', 404, true, 404);
         $res->setBody('Not Found');
         $res->response();
-        Toolkit::trace("Action not fount: $path");
+        Toolkit::trace("Action not found: $path");
         return false;
     }
 

@@ -23,8 +23,10 @@ abstract class ComponentFactory extends Component {
                 'class' => '\\x2ts\\app\\Router',
                 'singleton' => true,
                 'conf' => array(
-                    'gzip' => 5,
                     'defaultAction' => '/index',
+                    'actionSuffix' => 'Action',
+                    'actionSuffixOmissible' => false,
+                    'baseUri' => '/',
                 ),
             ),
             'db' => array(
