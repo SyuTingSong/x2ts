@@ -75,7 +75,9 @@ abstract class Action {
     }
 
     public function run($pArgs = array()) {
-        Toolkit::trace("App Start: " . $this->request->server('REQUEST_URI'));
+        Toolkit::trace("App Start: "
+            . $this->server('REQUEST_METHOD') . ' ' . $this->server('REQUEST_URI')
+        );
         try {
             $this->_run($pArgs);
         } catch (ApplicationExitException $e) {
@@ -95,7 +97,9 @@ abstract class Action {
             ), X_LOG_ERROR, 'x2ts\app\Action::run');
         }
         $this->response->response();
-        Toolkit::trace("App Exit: " . $this->request->server('REQUEST_URI'));
+        Toolkit::trace("App Exit: "
+            . $this->server('REQUEST_METHOD') . ' ' . $this->server('REQUEST_URI')
+        );
     }
 
     /**
