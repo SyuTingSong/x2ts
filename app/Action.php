@@ -331,7 +331,7 @@ abstract class Action {
             array_shift($paths);
             $className = array_pop($paths);
             $actionSuffix = ComponentFactory::router()->conf['actionSuffix'];
-            if (strstr($className, $actionSuffix) === $actionSuffix) {
+            if (substr($className, strrpos($className, $actionSuffix)) === $actionSuffix) {
                 $basename = substr($className, 0, -strlen($actionSuffix));
             } else {
                 $basename = $className;
