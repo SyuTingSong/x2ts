@@ -9,8 +9,6 @@
 namespace x2ts;
 
 trait TConfig {
-    protected static $_conf=array();
-
     /**
      * @param array|null $conf
      * @return void|array
