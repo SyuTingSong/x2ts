@@ -119,7 +119,7 @@ abstract class Action {
      * Fetch the $name var from query string
      * @param string $name
      * @param mixed $default
-     * @return string
+     * @return mixed
      */
     public function query($name = null, $default = null) {
         return $this->request->query($name, $default);
