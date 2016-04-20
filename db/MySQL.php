@@ -17,6 +17,7 @@ define('MYSQL_ERR_FK_PREVENT_INS', 1452);
  * @property-read PDO $pdo
  * @property-read int $affectedRows
  * @property-read int $lastInsertId
+ * @property-read string dbName
  */
 class MySQL extends Component implements IDataBase {
     protected static $_conf = array(
@@ -49,11 +50,16 @@ class MySQL extends Component implements IDataBase {
         return $this->_pdo;
     }
 
+    protected $_dbName = null;
     /**
      * @return null|string
      */
     public function getDbName() {
-        return $this->conf['dbname'];
+        if (empty($this->_dbName)) {
+            $r = $this->query('SELECT DATABASE() AS dbname');
+            $this->_dbName = $r[0]['dbname'];
+        }
+        return $this->_dbName;
     }
 
     private function serializeArray($array) {
