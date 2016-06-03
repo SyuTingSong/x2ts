@@ -15,6 +15,7 @@ use x2ts\db\orm\Model;
  * @method static cache\MCache cache()
  * @method static cache\CCache cc()
  * @method static view\Hail view()
+ * @method static rpc\RPC rpc(string $package = null)
  */
 abstract class ComponentFactory extends Component {
     protected static $_conf = array(
@@ -81,6 +82,23 @@ abstract class ComponentFactory extends Component {
                     'enable_clip' => false,
                     'cacheId' => 'cc', // string to cache component id or false to disable cache
                     'cacheDuration' => 60, // page cache duration, second
+                )
+            ),
+            'rpc' => array(
+                'class' => '\\x2ts\\rpc\\RPC',
+                'singleton' => true,
+                'conf' => array(
+                    'connection' => [
+                        'host' => 'localhost',
+                        'port' => 5672,
+                        'login' => 'guest',
+                        'password' => 'guest',
+                        'vhost' => '/',
+                        'read_timeout' => 0,
+                        'write_timeout' => 0,
+                        'connect_timeout' => 0,
+                    ],
+                    'persistent' => false,
                 )
             ),
         ),
