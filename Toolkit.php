@@ -46,15 +46,16 @@ abstract class Toolkit {
      * @return string
      */
     public static function toCamelCase($name, $Pascal = false) {
-        if (!isset(self::$camelCase[$Pascal][$name])) {
+        $p = $Pascal ? 'true' : 'false';
+        if (!isset(self::$camelCase[$p][$name])) {
             $r = self::extractWords($name);
             $r = ucwords($r);
             if (!$Pascal)
                 $r = lcfirst($r);
             $r = strtr($r, array(' ' => ''));
-            self::$camelCase[$Pascal][$name] = $r;
+            self::$camelCase[$p][$name] = $r;
         }
-        return self::$camelCase[$Pascal][$name];
+        return self::$camelCase[$p][$name];
     }
 
     /**
