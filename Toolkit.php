@@ -72,31 +72,30 @@ abstract class Toolkit {
         return $r;
     }
 
-
     /**
      * @param $word
      * @return mixed|string
      */
     public static function pluralize($word) {
         $plural = array(
-            '/(quiz)$/i' => '$1zes',
-            '/^(ox)$/i' => '$1en',
-            '/([m|l])ouse$/i' => '$1ice',
+            '/(quiz)$/i'               => '$1zes',
+            '/^(ox)$/i'                => '$1en',
+            '/([m|l])ouse$/i'          => '$1ice',
             '/(matr|vert|ind)ix|ex$/i' => '$1ices',
-            '/(x|ch|ss|sh)$/i' => '$1es',
-            '/([^aeiouy]|qu)ies$/i' => '$1y',
-            '/([^aeiouy]|qu)y$/i' => '$1ies',
-            '/(hive)$/i' => '$1s',
+            '/(x|ch|ss|sh)$/i'         => '$1es',
+            '/([^aeiouy]|qu)ies$/i'    => '$1y',
+            '/([^aeiouy]|qu)y$/i'      => '$1ies',
+            '/(hive)$/i'               => '$1s',
             '/(?:([^f])fe|([lr])f)$/i' => '$1$2ves',
-            '/sis$/i' => 'ses',
-            '/([ti])um$/i' => '$1a',
-            '/(buffal|tomat)o$/i' => '$1oes',
-            '/(bu)s$/i' => '$1ses',
-            '/(alias|status)/i' => '$1es',
-            '/(octop|vir)us$/i' => '$1i',
-            '/(ax|test)is$/i' => '$1es',
-            '/s$/i' => 's',
-            '/$/' => 's'
+            '/sis$/i'                  => 'ses',
+            '/([ti])um$/i'             => '$1a',
+            '/(buffal|tomat)o$/i'      => '$1oes',
+            '/(bu)s$/i'                => '$1ses',
+            '/(alias|status)/i'        => '$1es',
+            '/(octop|vir)us$/i'        => '$1i',
+            '/(ax|test)is$/i'          => '$1es',
+            '/s$/i'                    => 's',
+            '/$/'                      => 's',
         );
 
         $uncountable = array(
@@ -107,16 +106,16 @@ abstract class Toolkit {
             'species',
             'series',
             'fish',
-            'sheep'
+            'sheep',
         );
 
         $irregular = array(
             'person' => 'people',
-            'man' => 'men',
-            'child' => 'children',
-            'sex' => 'sexes',
-            'move' => 'moves',
-            'leaf' => 'leaves',
+            'man'    => 'men',
+            'child'  => 'children',
+            'sex'    => 'sexes',
+            'move'   => 'moves',
+            'leaf'   => 'leaves',
         );
 
         foreach ($uncountable as $_uncountable) {
@@ -142,12 +141,12 @@ abstract class Toolkit {
 
     public static $logFile;
 
-    public static function log($msg, $logLevel = X_LOG_DEBUG, $category = 'app') {
+    public static function log($msg, $logLevel = X_LOG_DEBUG, $category = '', $traceIndex = 1) {
         $logLevelName = array('debug', 'notice', 'warning', 'error');
         $logLevelColor = array("\x1B[35m", "\x1B[32m", "\x1B[33m", "\x1B[31m");
         if ($logLevel >= X_LOG_LEVEL) {
             if (!is_resource(self::$logFile)) {
-                self::$logFile = fopen(X_RUNTIME_ROOT.'/app.log', 'a+');
+                self::$logFile = fopen(X_RUNTIME_ROOT . '/app.log', 'a+');
             }
             if (is_callable($msg)) {
                 $logMessage = call_user_func($msg);
@@ -157,7 +156,13 @@ abstract class Toolkit {
                 $logMessage = ob_get_contents();
                 ob_end_clean();
             } else {
-                $logMessage = strval($msg);
+                $logMessage = (string) $msg;
+            }
+            if ($category === '') {
+                $trace = debug_backtrace();
+                $class = isset($trace[$traceIndex]['class']) ? $trace[$traceIndex]['class'] : 'FUNC';
+                $func = $trace[$traceIndex]['function'];
+                $category = "$class::$func";
             }
             fprintf(
                 self::$logFile, "%s[%s][%s][%s]%s\x1B[0m\n",
@@ -170,15 +175,10 @@ abstract class Toolkit {
         }
     }
 
-    public static function trace($msg, $traceIndex = 1) {
-        if (X_LOG_DEBUG >= X_LOG_LEVEL) {
-            $trace = debug_backtrace();
-            $class = isset($trace[$traceIndex]['class']) ? $trace[$traceIndex]['class'] : 'FUNC';
-            $func = $trace[$traceIndex]['function'];
-            self::log($msg, X_LOG_DEBUG, "$class::$func");
-        }
+    public static function trace($msg, $traceIndex = 2) {
+        if (X_LOG_DEBUG >= X_LOG_LEVEL)
+            self::log($msg, X_LOG_DEBUG, '', $traceIndex);
     }
-
 
     /**
      * @param string $name

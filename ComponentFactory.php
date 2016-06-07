@@ -118,7 +118,7 @@ abstract class ComponentFactory extends Component {
     }
 
     public static function trace($msg) {
-        Toolkit::trace($msg, 2);
+        Toolkit::trace($msg, 3);
     }
 
 
