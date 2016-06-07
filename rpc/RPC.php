@@ -132,6 +132,7 @@ class RPC extends Component {
                     'result' => null,
                 ],
             ];
+            Toolkit::log($payload['exception']['args'][0], X_LOG_WARNING);
             goto reply;
         }
         Toolkit::trace($callInfo);
@@ -156,6 +157,7 @@ class RPC extends Component {
                     ],
                     'result'    => null,
                 ];
+                Toolkit::log($payload['exception']['args'][0], X_LOG_WARNING);
             }
         } catch (Throwable $e) {
             $message = get_class($e) . ' thrown in remote file "' . $e->getFile() . '" (line: ' . $e->getLine() .
@@ -168,6 +170,7 @@ class RPC extends Component {
                 ],
                 'result'    => null,
             ];
+            Toolkit::log($payload['exception']['args'][0], X_LOG_WARNING);
         }
 
         reply:
@@ -185,6 +188,8 @@ class RPC extends Component {
     private function register_rpc_server_shutdown_function() {
         register_shutdown_function(function () {
             $error = error_get_last();
+            if (empty($error))
+                return;
             if ($error['type'] & (
                     E_ALL &
                     ~E_NOTICE &
@@ -196,7 +201,6 @@ class RPC extends Component {
                     ~E_STRICT
                 )
             ) {
-                Toolkit::log($error, X_LOG_ERROR, 'rpc.shutdown');
                 $payload = [
                     'error'     => $error,
                     'exception' => [
@@ -210,6 +214,7 @@ class RPC extends Component {
                     ],
                     'result'    => null,
                 ];
+                Toolkit::log($payload['exception']['args'][0], X_LOG_ERROR);
 
                 /**
                  * @var AMQPExchange $e
@@ -226,6 +231,8 @@ class RPC extends Component {
                     );
                     $q->reject($m->getDeliveryTag());
                 }
+            } else {
+                Toolkit::log($error['message'], X_LOG_NOTICE);
             }
         });
     }
@@ -247,5 +254,4 @@ class RPC extends Component {
         $this->setPackage($package);
     }
 }
-
 
