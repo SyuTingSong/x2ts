@@ -5,8 +5,12 @@ namespace x2ts\db;
 use PDO;
 use PDOException;
 use x2ts\Component;
+use x2ts\ExtensionNotLoadedException;
 use x2ts\Toolkit;
 
+if (!extension_loaded('pdo')) {
+    throw new ExtensionNotLoadedException('The x2ts\db\MySQL required extension pdo has not been loaded yet');
+}
 define('MYSQL_ERR_DUP_ENTRY', 1062);
 define('MYSQL_ERR_FK_PREVENT_DEL', 1451);
 define('MYSQL_ERR_FK_PREVENT_INS', 1452);

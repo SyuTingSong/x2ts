@@ -11,8 +11,13 @@ namespace x2ts\db;
 
 use Redis as PhpRedis;
 use Exception;
+use x2ts\ExtensionNotLoadedException;
 use x2ts\IComponent;
 use x2ts\Toolkit;
+
+if (!extension_loaded('phpredis')) {
+    throw new ExtensionNotLoadedException('The x2ts\db\Redis required extension phpredis has not been loaded yet');
+}
 
 /**
  * Class Redis
