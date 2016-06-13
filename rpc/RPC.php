@@ -139,6 +139,7 @@ class RPC extends Component {
 
         try {
             if (array_key_exists($callInfo['name'], $this->callbacks)) {
+                error_clear_last();
                 $r = call_user_func_array($this->callbacks[$callInfo['name']], $callInfo['args']);
                 if ($callInfo['void']) {
                     goto finish;
