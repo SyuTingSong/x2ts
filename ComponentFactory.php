@@ -16,6 +16,7 @@ use x2ts\db\orm\Model;
  * @method static cache\CCache cc()
  * @method static view\Hail view()
  * @method static rpc\RPC rpc(string $package = null)
+ * @method static daemon\Daemon daemon(array $settings = [])
  */
 abstract class ComponentFactory extends Component {
     protected static $_conf = array(
@@ -34,7 +35,7 @@ abstract class ComponentFactory extends Component {
                 'class' => '\\x2ts\\db\\SQLite',
                 'singleton' => true,
                 'conf' => array(
-                    'filename' => X_RUNTIME_ROOT . '/sqlite.db'
+                    'filename' => X_RUNTIME_ROOT . '/sqlite.db',
                 ),
             ),
             'model' => array(
@@ -53,7 +54,7 @@ abstract class ComponentFactory extends Component {
                         'cacheId' => 'cache',
                         'duration' => 60,
                     ),
-                )
+                ),
             ),
             'cache' => array(
                 'class' => '\\x2ts\\MCache',
@@ -82,7 +83,7 @@ abstract class ComponentFactory extends Component {
                     'enable_clip' => false,
                     'cacheId' => 'cc', // string to cache component id or false to disable cache
                     'cacheDuration' => 60, // page cache duration, second
-                )
+                ),
             ),
             'rpc' => array(
                 'class' => '\\x2ts\\rpc\\RPC',
@@ -99,7 +100,18 @@ abstract class ComponentFactory extends Component {
                         'connect_timeout' => 0,
                     ],
                     'persistent' => false,
-                )
+                ),
+            ),
+            'daemon' => array(
+                'class' => '\\x2ts\\daemon\\Daemon',
+                'singleton' => false,
+                'conf' => array(
+                    'workerNum' => 1,
+                    'autoRestart' => false,
+                    'daemonize' => false,
+                    'name' => '',
+                    'onWorkerStart' => null,
+                ),
             ),
         ),
     );
@@ -120,7 +132,6 @@ abstract class ComponentFactory extends Component {
     public static function trace($msg) {
         Toolkit::trace($msg, 3);
     }
-
 
     /**
      * @param string $name
