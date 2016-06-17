@@ -142,12 +142,14 @@ abstract class ComponentFactory extends Component {
     public static function __callStatic($name, $args) {
         if (isset(self::$_conf['component'][$name])) {
             $desc = self::$_conf['component'][$name];
-            if ($desc['singleton'] === false)
+            if ($desc['singleton'] === false) {
                 return self::getInstance($desc['class'], $args, $desc['conf']);
-            if (!self::$_singletons[$name] instanceof IComponent)
+            }
+            if (!isset(self::$_singletons[$name]) || !self::$_singletons[$name] instanceof IComponent) {
                 self::$_singletons[$name] = self::getInstance($desc['class'], $args, $desc['conf']);
-            elseif (method_exists(self::$_singletons[$name], '__reconstruct'))
+            } elseif (method_exists(self::$_singletons[$name], '__reconstruct')) {
                 self::$_singletons[$name]->__reconstruct(...$args);
+            }
             return self::$_singletons[$name];
         }
         throw new ComponentNotFoundException("The specified component $name cannot be found in configurations");
