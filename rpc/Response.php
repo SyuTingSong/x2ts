@@ -32,7 +32,8 @@ class Response {
                 $error = error_get_last();
                 if (!empty($error)) {
                     $throw = new PacketFormatException(
-                        'Response packet format error: ' . $error['message'],
+                        'Response packet format error: ' . $error['message'] .
+                        ' in file ' . $error['file'] . ' (line: ' . $error['line'] . ')',
                         PacketFormatException::RESPONSE
                     );
                 } else {

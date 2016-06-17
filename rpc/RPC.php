@@ -247,10 +247,6 @@ class RPC extends Component {
         $queue->consume([$this, '_onRequest']);
     }
 
-    public function __call($name, $arguments) {
-        return $this->call($name, ...$arguments);
-    }
-
     public function __reconstruct($package) {
         $this->setPackage($package);
     }
