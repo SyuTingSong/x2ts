@@ -78,7 +78,7 @@ class Daemon extends Component {
         Toolkit::log('Receive SIGTERM', X_LOG_NOTICE);
         $this->autoRestart = false;
         foreach ($this->workers as $worker) {
-            swoole_process::kill($worker->pid, SIGTERM);
+            swoole_process::kill($worker->pid, SIGQUIT);
         }
     }
 
