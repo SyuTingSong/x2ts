@@ -124,7 +124,7 @@ class RPC extends Component {
             $payload = [
                 'error'     => $error,
                 'exception' => [
-                    'class'  => '\x2ts\rpc\PacketFormatException',
+                    'class'  => 'PacketFormatException',
                     'args'   => [
                         'Request packet format error: ' . $error['message'],
                         PacketFormatException::REQUEST,
@@ -153,7 +153,7 @@ class RPC extends Component {
                 $payload = [
                     'error'     => 'Specified RPC function not exist',
                     'exception' => [
-                        'class' => '\x2ts\rpc\UnregisteredFunctionException',
+                        'class' => 'UnregisteredFunctionException',
                         'args'  => ["Specified RPC function {$this->package}.{$callInfo['name']} is unregistered."],
                     ],
                     'result'    => null,
@@ -166,7 +166,7 @@ class RPC extends Component {
             $payload = [
                 'error'     => error_get_last(),
                 'exception' => [
-                    'class' => '\x2ts\rpc\RPCException',
+                    'class' => 'RPCException',
                     'args'  => [$message],
                 ],
                 'result'    => null,
@@ -205,7 +205,7 @@ class RPC extends Component {
                 $payload = [
                     'error'     => $error,
                     'exception' => [
-                        'class' => '\x2ts\rpc\RPCException',
+                        'class' => 'RPCException',
                         'args'  => [
                             "An error \"{$error['message']}\" in remote file \"{$error['file']}\" "
                             . "(line: {$error['line']}) cause the rpc worker down."

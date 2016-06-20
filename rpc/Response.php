@@ -38,7 +38,7 @@ class Response {
                     );
                 } else {
                     if (isset($returnInfo['exception']['class'])) {
-                        $class = $returnInfo['exception']['class'];
+                        $class = __NAMESPACE__ . '\\' . $returnInfo['exception']['class'];
                         $args = $returnInfo['exception']['args'];
                         $throw = new $class(...$args);
                     }
