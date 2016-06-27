@@ -15,6 +15,7 @@ use AMQPExchange;
 use AMQPQueue;
 use AMQPQueueException;
 use Throwable;
+use X;
 use x2ts\Component;
 use x2ts\ExtensionNotLoadedException;
 use x2ts\Toolkit;
@@ -29,6 +30,9 @@ if (!extension_loaded('msgpack')) {
 /**
  * Class RPC
  * @package x2ts\rpc
+ *
+ * @property-read AMQPChannel $serverChannel
+ * @property-read AMQPChannel $clientChannel
  */
 class RPC extends Component {
     protected static $_conf = [
@@ -38,38 +42,30 @@ class RPC extends Component {
             'login'           => 'guest',
             'password'        => 'guest',
             'vhost'           => '/',
-            'read_timeout'    => 0,
-            'write_timeout'   => 0,
-            'connect_timeout' => 0,
+            'read_timeout'    => 30,
+            'write_timeout'   => 30,
+            'connect_timeout' => 30,
         ],
         'persistent' => false,
     ];
     private $connection;
-    private $channel;
-    private $exchange;
+    private $_serverChannel;
+    private $_clientChannel;
+    private $_serverExchange;
     private $package;
-    private $queue;
     private $callbacks;
 
-    public function __construct(string $package = 'rpc.common') {
-        $this->connection = new AMQPConnection($this->conf['connection']);
-        if ($this->conf['persistent']) {
-            $this->connection->pconnect();
-        } else {
-            $this->connection->connect();
-        }
-        $this->channel = new AMQPChannel($this->connection);
-        $this->channel->setPrefetchCount(1);
+    public function __construct(string $package = 'common') {
         $this->callbacks = [];
         $this->setPackage($package);
         parent::__construct();
     }
 
-    private function getExchange() {
-        if (!$this->exchange instanceof AMQPExchange) {
-            $this->exchange = new AMQPExchange($this->channel);
+    private function getServerExchange() {
+        if (!$this->_serverExchange instanceof AMQPExchange) {
+            $this->_serverExchange = new AMQPExchange($this->serverChannel);
         }
-        return $this->exchange;
+        return $this->_serverExchange;
     }
 
     public function setPackage(string $package):RPC {
@@ -77,26 +73,63 @@ class RPC extends Component {
         return $this;
     }
 
-    public function call(string $name, ...$args) {
+    private function getConnection(array $conf, bool $persistent = false):AMQPConnection {
+        $connection = new AMQPConnection($conf);
+        if ($persistent) {
+            $connection->pconnect();
+        } else {
+            $connection->connect();
+        }
+        return $connection;
+    }
+
+    protected function getServerChannel() {
+        if (!$this->_serverChannel instanceof AMQPChannel) {
+            $conf = $this->conf['connection'];
+            $conf['read_timeout'] = 0;
+
+            $this->_serverChannel = new AMQPChannel($this->getConnection(
+                $conf,
+                (bool) $this->conf['persistent']
+            ));
+        }
+        return $this->_serverChannel;
+    }
+
+    protected function getClientChannel() {
+        if (!$this->_clientChannel instanceof AMQPChannel) {
+            $this->_clientChannel = new AMQPChannel($this->getConnection(
+                $this->conf['connection'],
+                $this->conf['persistent']
+            ));
+        }
+        return $this->_clientChannel;
+    }
+
+    private function checkPackage() {
         try {
-            if (!$this->queue instanceof AMQPQueue) {
-                $q = new AMQPQueue($this->channel);
-                $q->setFlags(AMQP_DURABLE | AMQP_PASSIVE);
-                $q->setName($this->package);
-                $q->declareQueue();
-            }
-            return (new Request($this->channel, $this->package, $name, $args))->send()->getResponse();
+            $q = new AMQPQueue($this->clientChannel);
+            $q->setFlags(AMQP_DURABLE | AMQP_PASSIVE);
+            $q->setName($this->package);
+            $q->declareQueue();
         } catch (AMQPQueueException $ex) {
             throw new PackageNotFoundException();
         }
     }
 
+    public function call(string $name, ...$args) {
+        $this->checkPackage();
+        return (new Request($this->clientChannel, $this->package, $name, $args))->send()->getResponse();
+    }
+
     public function callVoid(string $name, ...$args):void {
-        (new Request($this->channel, $this->package, $name, $args))->send();
+        $this->checkPackage();
+        (new Request($this->clientChannel, $this->package, $name, $args))->send();
     }
 
     public function asyncCall(string $name, ...$args):Response {
-        return (new Request($this->channel, $this->package, $name, $args))->send();
+        $this->checkPackage();
+        return (new Request($this->clientChannel, $this->package, $name, $args))->send();
     }
 
     public function register(string $name, callable $method = null):RPC {
@@ -116,7 +149,7 @@ class RPC extends Component {
      * @throws \AMQPExchangeException
      */
     public function _onRequest(AMQPEnvelope $msg, AMQPQueue $q) {
-        $GLOBALS['_rpc_server_shutdown'] = [$this->getExchange(), $msg, $q];
+        $GLOBALS['_rpc_server_shutdown'] = [$this->getServerExchange(), $msg, $q];
         error_clear_last();
         $callInfo = msgpack_unpack($msg->getBody());
         $error = error_get_last();
@@ -175,7 +208,7 @@ class RPC extends Component {
         }
 
         reply:
-        $this->getExchange()->publish(
+        $this->getServerExchange()->publish(
             msgpack_pack($payload),
             $msg->getReplyTo(),
             AMQP_NOPARAM,
@@ -189,8 +222,9 @@ class RPC extends Component {
     private function register_rpc_server_shutdown_function() {
         register_shutdown_function(function () {
             $error = error_get_last();
-            if (empty($error))
+            if (empty($error)) {
                 return;
+            }
             if ($error['type'] & (
                     E_ALL &
                     ~E_NOTICE &
@@ -239,7 +273,8 @@ class RPC extends Component {
     }
 
     public function listen() {
-        $queue = new AMQPQueue($this->channel);
+        X::trace('listen start');
+        $queue = new AMQPQueue($this->serverChannel);
         $queue->setName($this->package);
         $queue->setFlags(AMQP_DURABLE);
         $queue->declareQueue();
