@@ -48,7 +48,6 @@ class RPC extends Component {
         ],
         'persistent' => false,
     ];
-    private $connection;
     private $_serverChannel;
     private $_clientChannel;
     private $_serverExchange;
@@ -92,6 +91,7 @@ class RPC extends Component {
                 $conf,
                 (bool) $this->conf['persistent']
             ));
+            $this->_serverChannel->setPrefetchCount(1);
         }
         return $this->_serverChannel;
     }
@@ -102,6 +102,7 @@ class RPC extends Component {
                 $this->conf['connection'],
                 $this->conf['persistent']
             ));
+            $this->_clientChannel->setPrefetchCount(1);
         }
         return $this->_clientChannel;
     }
