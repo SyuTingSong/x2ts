@@ -25,36 +25,39 @@ define('MYSQL_ERR_FK_PREVENT_INS', 1452);
  */
 class MySQL extends Component implements IDataBase {
     protected static $_conf = array(
-        'host' => 'localhost',
-        'port' => 3306,
-        'user' => 'root',
-        'password' => '',
-        'dbname' => 'test',
-        'charset' => 'utf8',
-        'persistent' => false,
+        'host'               => 'localhost',
+        'port'               => 3306,
+        'user'               => 'root',
+        'password'           => '',
+        'dbname'             => 'test',
+        'charset'            => 'utf8',
+        'persistent'         => false,
+        'mysqlCheckDuration' => 60,
     );
     /**
      * @var PDO $_pdo
      */
     protected $_pdo;
+    private $mysqlLiveCheckTime;
 
     public function getPdo() {
         if (!$this->_pdo instanceof PDO) {
-            $conf = $this->conf;
-            $this->_pdo = new PDO (
-                "mysql:host={$conf['host']};port={$conf['port']};dbname={$conf['dbname']};charset={$conf['charset']};",
-                $conf['user'],
-                $conf['password'],
-                array(
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$conf['charset']}",
-                    PDO::ATTR_PERSISTENT => $conf['persistent']
-                )
-            );
+            $this->initPdo();
+            return $this->_pdo;
+        }
+        if (!$this->inTransaction && $this->mysqlLiveCheckTime <= time()) {
+            $r = $this->_pdo->query('SELECT 1;')->fetchAll(PDO::FETCH_NUM);
+            if (!$r[0][0]) {
+                $this->initPdo();
+            } else {
+                $this->mysqlLiveCheckTime = time() + $this->conf['mysqlCheckDuration'];
+            }
         }
         return $this->_pdo;
     }
 
     protected $_dbName = null;
+
     /**
      * @return null|string
      */
@@ -103,7 +106,7 @@ class MySQL extends Component implements IDataBase {
                 throw new DataBaseException($e[2], $e[1]);
             }
         } catch (PDOException $ex) {
-            Toolkit::log($ex->getMessage() . "\n" . $ex->getTraceAsString(), X_LOG_DEBUG, 'xts\Query::query');
+            Toolkit::log($ex->getMessage() . "\n" . $ex->getTraceAsString(), X_LOG_DEBUG);
             throw new DataBaseException($ex->getMessage(), $ex->getCode(), $ex);
         }
     }
@@ -141,10 +144,13 @@ class MySQL extends Component implements IDataBase {
         return $this->_affectedRows;
     }
 
+    private $inTransaction = false;
+
     /**
      * @return boolean
      */
     public function startTransaction() {
+        $this->inTransaction = true;
         return $this->pdo->beginTransaction();
     }
 
@@ -152,6 +158,7 @@ class MySQL extends Component implements IDataBase {
      * @return boolean
      */
     public function commit() {
+        $this->inTransaction = false;
         return $this->pdo->commit();
     }
 
@@ -159,6 +166,22 @@ class MySQL extends Component implements IDataBase {
      * @return boolean
      */
     public function rollback() {
+        $this->inTransaction = false;
         return $this->pdo->rollBack();
+    }
+
+    private function initPdo() {
+        $conf = $this->conf;
+        $this->_pdo = new PDO (
+            "mysql:host={$conf['host']};port={$conf['port']};dbname={$conf['dbname']};charset={$conf['charset']};",
+            $conf['user'],
+            $conf['password'],
+            array(
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$conf['charset']}",
+                PDO::ATTR_PERSISTENT         => $conf['persistent'],
+            )
+        );
+        $this->inTransaction = false;
+        $this->mysqlLiveCheckTime = time() + $this->conf['mysqlCheckDuration'];
     }
 }
