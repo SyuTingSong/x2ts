@@ -4,6 +4,7 @@ namespace x2ts\db;
 
 use PDO;
 use PDOException;
+use PDOStatement;
 use x2ts\Component;
 use x2ts\ExtensionNotLoadedException;
 use x2ts\Toolkit;
@@ -46,8 +47,13 @@ class MySQL extends Component implements IDataBase {
             return $this->_pdo;
         }
         if (!$this->inTransaction && $this->mysqlLiveCheckTime <= time()) {
-            $r = $this->_pdo->query('SELECT 1;')->fetchAll(PDO::FETCH_NUM);
+            $st = $this->_pdo->query('SELECT 1;');
+            $r = [[false]];
+            if ($st instanceof PDOStatement) {
+                $r = $st->fetchAll(PDO::FETCH_NUM);
+            }
             if (!$r[0][0]) {
+                Toolkit::log('MySQL has gone away, re-init it', X_LOG_WARNING);
                 $this->initPdo();
             } else {
                 $this->mysqlLiveCheckTime = time() + $this->conf['mysqlCheckDuration'];
