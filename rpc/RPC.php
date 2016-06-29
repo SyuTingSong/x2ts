@@ -47,6 +47,7 @@ class RPC extends Component {
             'connect_timeout' => 30,
         ],
         'persistent' => false,
+        'maxRequest' => 500,
     ];
     private $_serverChannel;
     private $_clientChannel;
@@ -142,9 +143,12 @@ class RPC extends Component {
         return $this;
     }
 
+    protected $requestCounter = 0;
+
     /**
      * @param AMQPEnvelope $msg
      * @param AMQPQueue $q
+     * @return bool
      * @throws \AMQPChannelException
      * @throws \AMQPConnectionException
      * @throws \AMQPExchangeException
@@ -195,8 +199,10 @@ class RPC extends Component {
                 Toolkit::log($payload['exception']['args'][0], X_LOG_WARNING);
             }
         } catch (Throwable $e) {
-            $message = get_class($e) . ' thrown in remote file "' . $e->getFile() . '" (line: ' . $e->getLine() .
-                ') with message: ' . $e->getMessage() . "\n\nRemote Call stack:\n" . $e->getTraceAsString();
+            $message = get_class($e) . ' thrown in remote file "' . $e->getFile()
+                . '" (line: ' . $e->getLine() . ') with code ' . $e->getCode() .
+                ' message: ' . $e->getMessage() . "\n\nRemote Call stack:\n"
+                . $e->getTraceAsString();
             $payload = [
                 'error'     => error_get_last(),
                 'exception' => [
@@ -218,6 +224,17 @@ class RPC extends Component {
 
         finish:
         $q->ack($msg->getDeliveryTag());
+        if ($this->conf['maxRequest']) {
+            if (++$this->requestCounter > $this->conf['maxRequest']) {
+                Toolkit::log(
+                    'Max request limit exceed. Exit the rpc loop',
+                    X_LOG_NOTICE
+                );
+                error_clear_last();
+                return false; // exit consume loop
+            }
+        }
+        return true;
     }
 
     private function register_rpc_server_shutdown_function() {
@@ -242,9 +259,11 @@ class RPC extends Component {
                     'exception' => [
                         'class' => 'RPCException',
                         'args'  => [
-                            "An error \"{$error['message']}\" in remote file \"{$error['file']}\" "
-                            . "(line: {$error['line']}) cause the rpc worker down."
-                            . ' Please report this issue to the rpc server administrator as soon as possible.',
+                            "An error \"{$error['message']}\" in remote file "
+                            . "\"{$error['file']}\" (line: {$error['line']}) "
+                            . 'cause the rpc worker down. Please report this '
+                            . 'issue to the rpc server administrator as soon '
+                            . 'as possible.',
                             $error['type'],
                         ],
                     ],

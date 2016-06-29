@@ -100,6 +100,7 @@ abstract class ComponentFactory extends Component {
                         'connect_timeout' => 30,
                     ],
                     'persistent' => false,
+                    'maxRequest' => 500,
                 ),
             ),
             'daemon' => array(
