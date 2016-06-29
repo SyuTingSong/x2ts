@@ -22,81 +22,81 @@ abstract class ComponentFactory extends Component {
     protected static $_conf = array(
         'component' => array(
             'router' => array(
-                'class' => '\\x2ts\\app\\Router',
+                'class'     => '\\x2ts\\app\\Router',
                 'singleton' => true,
-                'conf' => array(
-                    'defaultAction' => '/index',
-                    'actionSuffix' => 'Action',
+                'conf'      => array(
+                    'defaultAction'         => '/index',
+                    'actionSuffix'          => 'Action',
                     'actionSuffixOmissible' => false,
-                    'baseUri' => '/',
+                    'baseUri'               => '/',
                 ),
             ),
-            'db' => array(
-                'class' => '\\x2ts\\db\\SQLite',
+            'db'     => array(
+                'class'     => '\\x2ts\\db\\SQLite',
                 'singleton' => true,
-                'conf' => array(
+                'conf'      => array(
                     'filename' => X_RUNTIME_ROOT . '/sqlite.db',
                 ),
             ),
-            'model' => array(
-                'class' => '\x2ts\db\orm\Model',
+            'model'  => array(
+                'class'     => '\x2ts\db\orm\Model',
                 'singleton' => false,
-                'conf' => array(
-                    'tablePrefix' => '',
-                    'dbId' => 'db',
+                'conf'      => array(
+                    'tablePrefix'          => '',
+                    'dbId'                 => 'db',
                     'enableCacheByDefault' => false,
-                    'schemaConf' => array(
-                        'schemaCacheId' => 'cc',
-                        'useSchemaCache' => false,
+                    'schemaConf'           => array(
+                        'schemaCacheId'       => 'cc',
+                        'useSchemaCache'      => false,
                         'schemaCacheDuration' => 0,
                     ),
-                    'cacheConf' => array(
-                        'cacheId' => 'cache',
+                    'cacheConf'            => array(
+                        'cacheId'  => 'cache',
                         'duration' => 60,
                     ),
                 ),
             ),
-            'cache' => array(
-                'class' => '\\x2ts\\MCache',
+            'cache'  => array(
+                'class'     => '\\x2ts\\MCache',
                 'singleton' => true,
-                'conf' => array(
-                    'host' => 'localhost',
-                    'port' => 11211,
+                'conf'      => array(
+                    'host'       => 'localhost',
+                    'port'       => 11211,
                     'persistent' => true,
-                    'keyPrefix' => '',
+                    'keyPrefix'  => '',
                 ),
             ),
-            'cc' => array(
-                'class' => '\\x2ts\\CICache',
+            'cc'     => array(
+                'class'     => '\\x2ts\\CICache',
                 'singleton' => true,
-                'conf' => array(
+                'conf'      => array(
                     'cacheDir' => X_RUNTIME_ROOT . '/cache',
                 ),
             ),
-            'view' => array(
-                'class' => '\\x2ts\\view\\Hail',
+            'view'   => array(
+                'class'     => '\\x2ts\\view\\Hail',
                 'singleton' => true,
-                'conf' => array(
-                    'tpl_dir' => X_PROJECT_ROOT . '/protected/view',
-                    'tpl_ext' => 'html',
-                    'compile_dir' => X_RUNTIME_ROOT . '/compiled_template',
-                    'enable_clip' => false,
-                    'cacheId' => 'cc', // string to cache component id or false to disable cache
+                'conf'      => array(
+                    'tpl_dir'       => X_PROJECT_ROOT . '/protected/view',
+                    'tpl_ext'       => 'html',
+                    'compile_dir'   => X_RUNTIME_ROOT . '/compiled_template',
+                    'enable_clip'   => false,
+                    'cacheId'       => 'cc', // string to cache component id or false to disable cache
                     'cacheDuration' => 60, // page cache duration, second
                 ),
             ),
-            'rpc' => array(
-                'class' => '\\x2ts\\rpc\\RPC',
+            'rpc'    => array(
+                'class'     => '\\x2ts\\rpc\\RPC',
                 'singleton' => true,
-                'conf' => array(
+                'conf'      => array(
                     'connection' => [
-                        'host' => 'localhost',
-                        'port' => 5672,
-                        'login' => 'guest',
-                        'password' => 'guest',
-                        'vhost' => '/',
-                        'read_timeout' => 30,
-                        'write_timeout' => 30,
+                        'host'            => 'localhost',
+                        'port'            => 5672,
+                        'login'           => 'guest',
+                        'password'        => 'guest',
+                        'vhost'           => '/',
+                        'read_timeout'    => 30,
+                        'write_timeout'   => 30,
                         'connect_timeout' => 30,
                     ],
                     'persistent' => false,
@@ -104,18 +104,18 @@ abstract class ComponentFactory extends Component {
                 ),
             ),
             'daemon' => array(
-                'class' => '\\x2ts\\daemon\\Daemon',
+                'class'     => '\\x2ts\\daemon\\Daemon',
                 'singleton' => false,
-                'conf' => array(
-                    'workerNum' => 1,
-                    'autoRestart' => false,
-                    'daemonize' => false,
-                    'name' => '',
+                'conf'      => array(
+                    'workerNum'     => 1,
+                    'autoRestart'   => false,
+                    'daemonize'     => false,
+                    'name'          => '',
                     'onWorkerStart' => null,
-                    'pidFile' => X_RUNTIME_ROOT . '/daemon.pid',
+                    'pidFile'       => X_RUNTIME_ROOT . '/daemon.pid',
                     'lockFile'      => X_RUNTIME_ROOT . '/daemon.lock',
-                    'user' => '',
-                    'group' => '',
+                    'user'          => '',
+                    'group'         => '',
                 ),
             ),
         ),
