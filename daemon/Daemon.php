@@ -27,6 +27,8 @@ class Daemon extends Component {
         'onWorkerStart' => null,
         'pidFile'       => X_RUNTIME_ROOT . '/daemon.pid',
         'lockFile'      => X_RUNTIME_ROOT . '/daemon.lock',
+        'user'          => '',
+        'group'         => '',
     ];
     private $workerNum;
     private $autoRestart;
@@ -37,6 +39,8 @@ class Daemon extends Component {
     private $pidFile;
     private $lockFile;
     private $isMaster = true;
+    private $user;
+    private $group;
 
     /**
      * Daemon constructor.
@@ -56,6 +60,18 @@ class Daemon extends Component {
 
     public function _workerStartDelegate(swoole_process $worker) {
         $this->isMaster = false;
+
+        if ($this->user) {
+            Toolkit::trace('Set worker process user to ' . $this->user);
+            $info = posix_getpwnam($this->user);
+            posix_setuid($info['uid']);
+        }
+        if ($this->group) {
+            Toolkit::trace('Set worker process group to ' . $this->group);
+            $info = posix_getgrnam($this->group);
+            $gid = $info['gid'];
+            posix_setgid($gid);
+        }
         if ($this->name) {
             @swoole_set_process_name($this->name . ': worker');
         }
@@ -66,6 +82,7 @@ class Daemon extends Component {
     public function _signalChild() {
         if (!$this->isMaster) return;
         Toolkit::log('[' . posix_getpid() . '] Receive SIGCHLD', X_LOG_NOTICE);
+        /** @noinspection PhpAssignmentInConditionInspection */
         while ($p = swoole_process::wait(false)) {
             unset($this->workers[$p['pid']]);
             if ($this->autoRestart) {
@@ -109,6 +126,7 @@ class Daemon extends Component {
         if (false === (bool) $this->lockFile) {
             return true;
         }
+        Toolkit::trace('Try to take the lock.');
         if (!is_file($this->lockFile)) {
             $r = touch($this->lockFile);
             if (!$r) {
