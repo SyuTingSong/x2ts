@@ -21,10 +21,25 @@ class Column implements ICompilable {
             }
         }
     }
+    
+    public function isInt():bool {
+        return in_array(
+            $this->type,
+            ['bigint', 'int', 'mediumint', 'smallint', 'tinyint']
+            ,true
+        );
+    }
 
+    public function isFloat():bool {
+        return in_array(
+            $this->type,
+            array('decimal', 'float', 'real', 'double'),
+            true
+        );
+    }
     /**
      * @param array $properties
-     * @return \xts\Compilable
+     * @return \x2ts\ICompilable
      */
     public static function __set_state($properties) {
         return new static($properties);

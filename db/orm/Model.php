@@ -16,8 +16,8 @@ use x2ts\ComponentFactory;
 
 /**
  * Class Model
- * @package xts
- * @property array $properties
+ * @package x2ts
+ * @property-read array $properties
  * @property-read TableSchema $tableSchema
  * @property-read IDataBase $db
  * @property-read string $modelName
@@ -26,7 +26,7 @@ use x2ts\ComponentFactory;
  * @property-read mixed $pk
  * @property-read string $pkName
  * @property-read string $tableName
- * @property array $modified
+ * @property-read array $modified
  * @property-read array $relations
  * @property-read SqlBuilder $builder
  */
@@ -35,65 +35,55 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     const INSERT_IGNORE = 1;
     const INSERT_UPDATE = 2;
     const INSERT_REPLACE = 3;
-
     /**
      * @var bool
      */
     protected $_isNewRecord = true;
-
     /**
      * @var mixed
      */
     protected $_oldPK = null;
-
     /**
      * @var array
      */
     protected $_properties = array();
-
     /**
      * @var array
      */
     protected $_modified = array();
-
     /**
      * @var array
      */
     protected $_relationObjects = array();
-
     /**
      * @var TableSchema
      */
     protected $_tableSchema;
-
     /**
      * @var string
      */
     protected $_modelName;
-
     /**
      * @var string
      */
     protected $_tableName;
-
     /**
      * @var array
      */
     public static $_conf = array(
-        'tablePrefix' => '',
-        'dbId' => 'db',
+        'tablePrefix'          => '',
+        'dbId'                 => 'db',
         'enableCacheByDefault' => false,
-        'schemaConf' => array(
-            'schemaCacheId' => 'cc',
-            'useSchemaCache' => false,
+        'schemaConf'           => array(
+            'schemaCacheId'       => 'cc',
+            'useSchemaCache'      => false,
             'schemaCacheDuration' => 0,
         ),
-        'cacheConf' => array(
-            'cacheId' => 'cache',
+        'cacheConf'            => array(
+            'cacheId'  => 'cache',
             'duration' => 60,
         ),
     );
-
     /**
      * @var SqlBuilder
      */
@@ -144,6 +134,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     /**
      * @param int $scenario [optional]
      * @return $this
+     * @throws MethodNotImplementException
      */
     public function save($scenario = Model::INSERT_NORMAL) {
         $pkName = $this->pkName;
@@ -157,8 +148,9 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
                         ->values($this->_properties)
                         ->query();
                     $pk = $this->db->getLastInsertId();
-                    if (empty($pk) && !empty($this->pk))
+                    if (empty($pk) && !empty($this->pk)) {
                         $pk = $this->pk;
+                    }
                     break;
                 case Model::INSERT_IGNORE:
                     $this->builder
@@ -183,12 +175,12 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
             if ($pk) {
                 $this->load($pk);
             }
-        } else if (!empty($this->_modified)) {
+        } else if (0 !== count($this->_modified)) {
             $this->_builder
                 ->update($this->tableName)
                 ->set($this->_modified)
                 ->where("`$pkName`=:_table_pk", array(
-                    ':_table_pk' => $this->oldPK
+                    ':_table_pk' => $this->oldPK,
                 ))
                 ->query();
             $this->_modified = array();
@@ -218,7 +210,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @param boolean $clone
      * @return null|Model
      */
-    public function one($condition = null, $params = array(), $clone = false) {
+    public function one(string $condition = null, array $params = [], $clone = false) {
         $this->_builder->select('*')
             ->from($this->tableName);
         if (!empty($condition)) {
@@ -226,8 +218,9 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
         }
         $r = $this->_builder->limit(1)
             ->query();
-        if (empty($r))
+        if (!is_array($r) or 0 === count($r)) {
             return null;
+        }
         $one = $clone ? clone $this : $this;
         return $one->setupOne($r[0]);
     }
@@ -244,8 +237,9 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
             ->select('*')
             ->from($this->tableName);
 
-        if (!empty($condition))
+        if (!empty($condition)) {
             $this->_builder->where($condition, $params);
+        }
 
         if (!is_null($offset)) {
             if (is_null($limit)) {
@@ -255,7 +249,7 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
             }
         }
         $r = $this->_builder->query();
-        if (empty($r)) {
+        if (!is_array($r) or 0 === count($r)) {
             return array();
         } else {
             return $this->setup($r);
@@ -270,29 +264,36 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     public function count($condition = null, $params = array()) {
         $this->_builder->select('COUNT(*)')
             ->from($this->tableName);
-        if (!empty($condition)) {
+        if (null !== $condition) {
             $this->_builder->where($condition, $params);
         }
         $r = $this->_builder->query();
-        if (empty($r)) {
+        if (!is_array($r)) {
             return false;
         }
-        return intval(reset($r[0]));
+        return (int) reset($r[0]);
     }
-
 
     private function setupOne($properties) {
         $pkName = $this->pkName;
-        foreach ($this->getTableSchema()->getColumns() as $column) {
-            /** @var Column $column */
-            if (isset($properties[$column->name])) {
-                if (in_array($column->type, array('bigint', 'int', 'mediumint', 'smallint', 'tinyint')))
-                    $this->_properties[$column->name] = intval($properties[$column->name]);
-                else if (in_array($column->type, array('decimal', 'float', 'real', 'double')))
-                    $this->_properties[$column->name] = doubleval($properties[$column->name]);
-                else
-                    $this->_properties[$column->name] = $properties[$column->name];
-            } else if (array_key_exists($column->name, $properties)) {
+        /** @var Column $column */
+        foreach ($this->tableSchema->columns as $column) {
+            if (!array_key_exists($column->name, $properties)) {
+                continue;
+            }
+
+            if (null !== $properties[$column->name]) {
+                if ($column->isInt()) {
+                    $this->_properties[$column->name] =
+                        (int) $properties[$column->name];
+                } else if ($column->isFloat()) {
+                    $this->_properties[$column->name] =
+                        (float) $properties[$column->name];
+                } else {
+                    $this->_properties[$column->name] =
+                        $properties[$column->name];
+                }
+            } else {
                 $this->_properties[$column->name] = null;
             }
         }
@@ -327,9 +328,9 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
 
     /**
      * @param null|int $duration
-     * @param callback $callback
      * @param null|string $key
      * @return CachedModel
+     * @internal param callable $callback
      */
     public function cache($duration = null, $key = null) {
         if (is_string($duration) && is_null($key) && !is_numeric($duration)) {
@@ -349,9 +350,12 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     /**
      * @param string $modelName
      */
-    public function __construct($modelName) {
+    public function __construct($modelName = null) {
         $this->_builder = new SqlBuilder($this->db);
-        $this->_modelName = $modelName;
+        $this->_modelName = $modelName ?? Toolkit::toCamelCase(
+                basename(str_replace('\\', '/', get_class($this))),
+                true
+            );
         parent::__construct();
     }
 
@@ -441,12 +445,12 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return TableSchema
      */
     public function getTableSchema() {
-        if (is_null($this->_tableSchema)) {
+        if (null === $this->_tableSchema) {
             /** @var TableSchema $schema */
             $this->_tableSchema = new MySQLTableSchema($this->tableName, $this->db);
             $keys = $this->_tableSchema->getKeys();
             if (empty($keys['PK']))
-                throw new MissingPrimaryKeyException("Table {$this->_modelName} does not have the Primary Key. It cannot be initialized as an Model");
+                throw new MissingPrimaryKeyException("Table {$this->tableName} does not have the Primary Key. It cannot be initialized as an Model");
         }
         return $this->_tableSchema;
     }
@@ -459,8 +463,9 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     }
 
     public function __get($name) {
-        if ($name == 'conf')
+        if ($name === 'conf') {
             return static::$_conf;
+        }
         $getter = Toolkit::toCamelCase("get $name");
         $snakeName = Toolkit::to_snake_case($name);
         if (method_exists($this, $getter)) {
@@ -469,11 +474,12 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
             return $this->_properties[$name];
         } else if (array_key_exists($snakeName, $this->_properties)) {
             return $this->_properties[$snakeName];
-        } else if (isset($this->relations[$name])
+        } else if (array_key_exists($name, $this->relations)
             && !$this->relations[$name] instanceof HasManyRelation
         ) { // Use method to load HasManyRelation
-            if (!array_key_exists($name, $this->_relationObjects))
+            if (!array_key_exists($name, $this->_relationObjects)) {
                 $this->_relationObjects[$name] = $this->loadRelationObj($name);
+            }
             return $this->_relationObjects[$name];
         }
         return null;
@@ -510,7 +516,13 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @param int $limit
      * @return Model|array|null
      */
-    protected function loadRelationObj($name, $condition = null, $params = array(), $offset = 0, $limit = 200) {
+    protected function loadRelationObj(
+        string $name,
+        string $condition = null,
+        array $params = [],
+        int $offset = 0,
+        int $limit = 200
+    ) {
         Toolkit::trace('Loading relation object');
         /** @var Relation $relation */
         $relation = $this->relations[$name];
@@ -522,20 +534,18 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
                 return $model->load($pk);
             case $relation instanceof HasOneRelation:
                 $c = $relation->foreignTableField . '=:_fid';
-                if ($condition)
+                if ($condition) {
                     $c .= " AND $condition";
-                $p = array(
-                        ':_fid' => $this->pk
-                    ) + $params;
+                }
+                $p = array_merge([':_fid' => $this->pk], $params);
                 Toolkit::trace("Load relation object {$relation->name}");
                 return $model->one($c, $p);
             case $relation instanceof HasManyRelation:
                 $c = $relation->foreignTableField . '=:_fid';
-                if ($condition)
+                if ($condition) {
                     $c .= " AND $condition";
-                $p = array(
-                        ':_fid' => $this->pk
-                    ) + $params;
+                }
+                $p = array_merge([':_fid' => $this->pk], $params);
                 Toolkit::trace("Load relation objects {$relation->name}");
                 return $model->many($c, $p, $offset, $limit);
         }
@@ -606,13 +616,14 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
      * @return $this
      */
     public function assign($array) {
-        if (isset($array[$this->pkName]) && $this->isNewRecord) {
+        if ($this->isNewRecord && !empty($array[$this->pkName])) {
             $this->load($array[$this->pkName]);
         }
 
         foreach ($this->_properties as $key => $value) {
-            if (isset($array[$key]))
+            if (array_key_exists($key, $array)) {
                 $this->_propertySet($key, $array[$key]);
+            }
         }
         return $this;
     }
