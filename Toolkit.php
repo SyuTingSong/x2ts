@@ -10,9 +10,9 @@ abstract class Toolkit {
      */
     public static function compile($var) {
         if (is_resource($var)) {
-            throw new UncompilableException("Resource cannot be compiled to PHP code");
+            throw new UncompilableException('Resource cannot be compiled to PHP code');
         } else if (is_object($var) && !$var instanceof ICompilable) {
-            throw new UncompilableException("The object is no compilable");
+            throw new UncompilableException('The object is no compilable');
         }
         return var_export($var, true);
     }
@@ -26,9 +26,9 @@ abstract class Toolkit {
         foreach ($src as $key => $value) {
             if (is_int($key)) {
                 $dst[] = $value;
-            } else if (!isset($dst[$key])) {
+            } else if (!array_key_exists($key, $dst)) {
                 $dst[$key] = $value;
-            } else if (is_array($dst[$key]) && is_array($value)) {
+            } else if (is_array($value) && is_array($dst[$key])) {
                 self::override($dst[$key], $value);
             } else {
                 $dst[$key] = $value;
@@ -50,8 +50,9 @@ abstract class Toolkit {
         if (!isset(self::$camelCase[$p][$name])) {
             $r = self::extractWords($name);
             $r = ucwords($r);
-            if (!$Pascal)
+            if (!$Pascal) {
                 $r = lcfirst($r);
+            }
             $r = strtr($r, array(' ' => ''));
             self::$camelCase[$p][$name] = $r;
         }
@@ -66,8 +67,9 @@ abstract class Toolkit {
      */
     public static function to_snake_case($name, $Upper_First_Letter = false) {
         $r = self::extractWords($name);
-        if ($Upper_First_Letter)
+        if ($Upper_First_Letter) {
             $r = ucwords($r);
+        }
         $r = strtr($r, array(' ' => '_'));
         return $r;
     }
@@ -119,20 +121,20 @@ abstract class Toolkit {
         );
 
         foreach ($uncountable as $_uncountable) {
-            if (substr(strtolower($word), -strlen($_uncountable)) == $_uncountable) {
+            if (substr(strtolower($word), -strlen($_uncountable)) === $_uncountable) {
                 return $word;
             }
         }
 
         foreach ($irregular as $_singular => $_plural) {
             $length = strlen($_singular);
-            if (substr($word, -$length) == $_singular) {
+            if (substr($word, -$length) === $_singular) {
                 return substr($word, 0, -$length) . $_plural;
             }
         }
 
         foreach ($plural as $search => $replacement) {
-            if (($r = preg_replace($search, $replacement, $word)) != $word) {
+            if (($r = preg_replace($search, $replacement, $word)) !== $word) {
                 return $r;
             }
         }
@@ -152,6 +154,7 @@ abstract class Toolkit {
                 $logMessage = call_user_func($msg);
             } elseif (is_array($msg) || is_object($msg)) {
                 ob_start();
+                /** @noinspection ForgottenDebugOutputInspection */
                 var_dump($msg);
                 $logMessage = ob_get_contents();
                 ob_end_clean();
@@ -160,7 +163,7 @@ abstract class Toolkit {
             }
             if ($category === '') {
                 $trace = debug_backtrace();
-                $class = isset($trace[$traceIndex]['class']) ? $trace[$traceIndex]['class'] : 'FUNC';
+                $class = $trace[$traceIndex]['class'] ?? 'FUNC';
                 $func = $trace[$traceIndex]['function'];
                 $category = "$class::$func";
             }
@@ -176,8 +179,9 @@ abstract class Toolkit {
     }
 
     public static function trace($msg, $traceIndex = 2) {
-        if (X_LOG_DEBUG >= X_LOG_LEVEL)
+        if (X_LOG_DEBUG >= X_LOG_LEVEL) {
             self::log($msg, X_LOG_DEBUG, '', $traceIndex);
+        }
     }
 
     /**
