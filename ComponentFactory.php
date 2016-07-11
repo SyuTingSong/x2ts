@@ -4,7 +4,6 @@ namespace x2ts;
 
 use InvalidArgumentException;
 use ReflectionClass;
-use x2ts\db\orm\Model;
 
 /**
  * Class ComponentFactory
@@ -17,6 +16,7 @@ use x2ts\db\orm\Model;
  * @method static view\Hail view()
  * @method static rpc\RPC rpc(string $package = null)
  * @method static daemon\Daemon daemon(array $settings = [])
+ * @method static Utils utils()
  */
 abstract class ComponentFactory extends Component {
     protected static $_conf = array(
@@ -118,6 +118,18 @@ abstract class ComponentFactory extends Component {
                     'group'         => '',
                 ),
             ),
+            'utils'  => array(
+                'class'     => '\\x2ts\\Utils',
+                'singleton' => true,
+                'conf'      => array(
+                    'ldap' => array(
+                        'host'     => 'localhost',
+                        'port'     => 389,
+                        'dn_base'  => 'ou=staffs,dc=example,dc=com',
+                        'auth_key' => 'uid',
+                    ),
+                ),
+            ),
         ),
     );
     private static $_singletons;
@@ -125,8 +137,10 @@ abstract class ComponentFactory extends Component {
     /**
      * @param $componentId
      * @return bool|Component
+     * @throws \x2ts\ComponentNotFoundException
      */
     public static function getComponent($componentId) {
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return self::__callStatic($componentId, array());
     }
 
