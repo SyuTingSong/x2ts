@@ -281,22 +281,18 @@ namespace {
                 'include' => '(\{include(?: file){0,1}="[^"]*"(?: cache="[^"]*")?\})',
                 'template_info' => '(\{\$template_info\})',
                 'function' => '(\{function(?: name){0,1}="(\w*?)(?:.*?)"\})',
-                'clipdef' => '(\{clipdef(?: name){0,1}="\w*"\})',
+                'clipdef' => '(\{clipdef(?: name){0,1}="[\w\-]*"\})',
                 'clipdef_close' => '(\{\/clipdef\})',
-                'clip' => '(\{clip(?: name){0,1}="\w*"\})',
+                'clip' => '(\{clip(?: name){0,1}="[\w\-]*"\})',
             );
 
-            $tag_regexp = "/" . join("|", $tag_regexp) . "/";
+            $tag_regexp = '/' . implode('|', $tag_regexp) . '/';
 
             //split the code with the tags regexp
             $template_code = preg_split($tag_regexp, $template_code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
-            //compile the code
-            $compiled_code = $this->compileCode($template_code);
-
             //return the compiled code
-            return $compiled_code;
-
+            return $this->compileCode($template_code);
         }
 
 
@@ -456,8 +452,8 @@ namespace {
 
                     //if code
                     $compiled_code .= '<?php echo "<pre>"; print_r( $this->var ); echo "</pre>"; ?>';
-                } // record clip
-                elseif (self::$enable_clip && preg_match('/\{clipdef(?: name){0,1}="(\w*)"\}/', $html, $code)) {
+                } // clipdef
+                elseif (self::$enable_clip && preg_match('/\{clipdef(?: name){0,1}="([\w\-]*)"\}/', $html, $code)) {
                     if (empty($code[1])) {
                         $e = new RainTpl_SyntaxException('You must define the clip name for clipdef in ' . $this->tpl['tpl_filename'] . ' template');
                         throw $e->setTemplateFile($this->tpl['tpl_filename']);
@@ -475,7 +471,7 @@ namespace {
 
                     $compiled_code .= '<?php self::$clips["' . $name . '"] .= ob_get_contents(); ob_end_clean();?>';
                 } // clip output
-                elseif (self::$enable_clip && preg_match('/\{clip(?: name){0,1}="(\w*)"\}/', $html, $code)) {
+                elseif (self::$enable_clip && preg_match('/\{clip(?: name){0,1}="([\w\-]*)"\}/', $html, $code)) {
                     $name = $code[1];
                     if (empty($name)) {
                         $e = new RainTpl_SyntaxException('You must provide clip name in ' . $this->tpl['tpl_filename'] . ' template');
