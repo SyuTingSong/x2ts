@@ -225,7 +225,7 @@ namespace {
                 'clipdef'       => '(\{clipdef(?: name){0,1}="[\w\-]*"\})',
                 'clipdef_close' => '(\{\/clipdef\})',
                 'clip'          => '(\{clip(?: name){0,1}="[\w\-]*"\})',
-                'exported_vars' => '(\{rain_tpl_exported_vars:.*\})',
+                'exported_vars' => '(\$php\.tpl\.exported_vars)',
             );
 
             $tag_regexp = "/" . implode("|", $tag_regexp) . "/";
@@ -296,7 +296,7 @@ namespace {
                     }
                     $compiled_code .= '<?php if(!isset(self::$clips["' . $name . '"])) self::$clips["' . $name . '"]=""; echo \'' . $code[0] . '\';?>';
                 } // exported_vars
-                elseif (preg_match('/\{rain_tpl_exported_vars:.+\}/', $html, $code)) {
+                elseif ($html === '$php.tpl.exported_vars') {
                     $compiled_code .= '<?php echo json_encode($this->var);?>';
                 } //all html code
                 else {
