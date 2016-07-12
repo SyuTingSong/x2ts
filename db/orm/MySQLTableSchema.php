@@ -30,20 +30,17 @@ class MySQLTableSchema extends TableSchema {
             $column = new Column();
             $column->name = $col['COLUMN_NAME'];
             $column->type = $col['DATA_TYPE'];
-            $column->canBeNull = $col['IS_NULLABLE'] == 'YES';
-            if(is_null($col['COLUMN_DEFAULT']))
-                $column->defaultValue = $column->canBeNull?null:$this->nullToDefault($column->type);
-            else
-                $column->defaultValue = $col['COLUMN_DEFAULT'];
-            if($col['COLUMN_KEY'] == 'PRI') {
+            $column->canBeNull = $col['IS_NULLABLE'] === 'YES';
+            $column->defaultValue = $col['COLUMN_DEFAULT'];
+            if($col['COLUMN_KEY'] === 'PRI') {
                 $column->isPK = true;
                 $keys['PK'] = $col['COLUMN_NAME'];
             }
-            if($col['COLUMN_KEY'] == 'UNI') {
+            if($col['COLUMN_KEY'] === 'UNI') {
                 $column->isUQ = true;
                 $keys['UQ'][] = $col['COLUMN_NAME'];
             }
-            if($col['COLUMN_KEY'] == 'MUL') {
+            if($col['COLUMN_KEY'] === 'MUL') {
                 $keys['MU'][] = $col['COLUMN_NAME'];
             }
             $columns[$column->name] = $column;
@@ -100,27 +97,5 @@ class MySQLTableSchema extends TableSchema {
             $this->cache->set($key, static::$tables[$this->name], $this->conf['schemaCacheDuration']);
         }
     }
-    private function nullToDefault($type) {
-        switch($type) {
-            case 'varchar':
-            case 'char':
-            case 'text':
-                return '';
-            case 'date':
-                return '1970-01-01';
-            case 'datetime':
-                return '1970-01-01 00:00:00';
-            case 'time':
-                return '00:00:00';
-            case 'int':
-            case 'bigint':
-            case 'smallint':
-            case 'tinyint':
-            case 'float':
-            case 'decimal':
-                return 0;
-            default:
-                return '';
-        }
-    }
+
 }
