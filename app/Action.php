@@ -2,6 +2,7 @@
 
 namespace x2ts\app;
 
+use Exception;
 use ReflectionMethod;
 use ReflectionParameter;
 use x2ts\http\Request;
@@ -12,10 +13,12 @@ use x2ts\ComponentFactory;
 
 /**
  * Class Action
+ *
  * @package x2ts\app
  */
 abstract class Action {
     use TGetterSetter;
+
     /**
      * @var Request @req
      */
@@ -86,15 +89,8 @@ abstract class Action {
             } else {
                 Toolkit::trace('App end without message' . "\n" . $e->getTraceAsString());
             }
-        } catch (\Exception $e) {
-            Toolkit::log(sprintf(
-                "%s is thrown at %s(%d) with message: %s\nCall stack:\n%s",
-                get_class($e),
-                $e->getFile(),
-                $e->getLine(),
-                $e->getMessage(),
-                $e->getTraceAsString()
-            ), X_LOG_ERROR, 'x2ts\app\Action::run');
+        } catch (Exception $e) {
+            Toolkit::log($e, X_LOG_ERROR, 'x2ts\app\Action::run');
         }
         $this->response->response();
         Toolkit::trace("App Exit: "
@@ -104,7 +100,8 @@ abstract class Action {
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function session($name = null, $default = null) {
@@ -117,8 +114,10 @@ abstract class Action {
 
     /**
      * Fetch the $name var from query string
+     *
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function query($name = null, $default = null) {
@@ -127,7 +126,8 @@ abstract class Action {
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function post($name = null, $default = null) {
@@ -136,7 +136,8 @@ abstract class Action {
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function header($name = null, $default = null) {
@@ -145,7 +146,8 @@ abstract class Action {
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function cookie($name = null, $default = null) {
@@ -154,7 +156,8 @@ abstract class Action {
 
     /**
      * @param string $name
-     * @param mixed $default
+     * @param mixed  $default
+     *
      * @return mixed
      */
     public function server($name = null, $default = null) {
@@ -163,7 +166,8 @@ abstract class Action {
 
     /**
      * @param string $name
-     * @param array $default
+     * @param array  $default
+     *
      * @return mixed
      */
     public function file($name = null, $default = null) {
@@ -173,11 +177,12 @@ abstract class Action {
     /**
      * @param string $key
      * @param string $value
-     * @param int $expire
+     * @param int    $expire
      * @param string $path
      * @param string $domain
-     * @param bool $secure
-     * @param bool $httpOnly
+     * @param bool   $secure
+     * @param bool   $httpOnly
+     *
      * @return $this
      */
     public function setCookie($key, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httpOnly = null) {
@@ -188,6 +193,7 @@ abstract class Action {
     /**
      * @param string $name
      * @param string $value
+     *
      * @return $this
      */
     public function setHeader() {
@@ -210,6 +216,7 @@ abstract class Action {
 
     /**
      * @param string $words
+     *
      * @return $this
      */
     public function out($words) {
@@ -244,8 +251,9 @@ abstract class Action {
 
     /**
      * @param string $msg
-     * @param array $data
+     * @param array  $data
      * @param string $goto
+     *
      * @return $this
      */
     public function jsonEcho($msg = null, $data = null, $goto = null) {
@@ -256,10 +264,11 @@ abstract class Action {
     /**
      * output a json encoded object to report an error
      *
-     * @param int $code
-     * @param string $msg The human readable error message
-     * @param mixed $data [optional]
+     * @param int    $code
+     * @param string $msg  The human readable error message
+     * @param mixed  $data [optional]
      * @param string $goto [optional] The target url to redirect
+     *
      * @return $this
      */
     public function jsonError($code, $msg = null, $data = null, $goto = null) {
@@ -283,7 +292,8 @@ abstract class Action {
      * Redirect user to the new url
      *
      * @param string $location
-     * @param int $statusCode
+     * @param int    $statusCode
+     *
      * @return $this
      */
     public function redirect($location, $statusCode = 302) {
@@ -295,6 +305,7 @@ abstract class Action {
      * Set view layout
      *
      * @param string $layout
+     *
      * @return $this
      */
     public function setLayout($layout) {
@@ -306,6 +317,7 @@ abstract class Action {
      * Set page title
      *
      * @param string $title
+     *
      * @return $this
      */
     public function setTitle($title) {
@@ -317,8 +329,9 @@ abstract class Action {
      * Render a template and returns html
      *
      * @param string $tpl
-     * @param array $params
+     * @param array  $params
      * @param string $cacheId
+     *
      * @return string
      */
     public function render() {
@@ -360,8 +373,9 @@ abstract class Action {
      * Render a template and send html to response
      *
      * @param string $tpl
-     * @param array $params
+     * @param array  $params
      * @param string $cacheId
+     *
      * @return $this
      */
     public function display() {

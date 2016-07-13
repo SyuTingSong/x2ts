@@ -5,6 +5,7 @@ namespace x2ts;
 abstract class Toolkit {
     /**
      * @param $var
+     *
      * @throws UncompilableException
      * @return string
      */
@@ -20,6 +21,7 @@ abstract class Toolkit {
     /**
      * @param array $dst
      * @param array $src
+     *
      * @return array
      */
     public static function &override(&$dst, $src) {
@@ -41,8 +43,10 @@ abstract class Toolkit {
 
     /**
      * Convert $name to camelCase
-     * @param string $name
+     *
+     * @param string  $name
      * @param boolean $Pascal
+     *
      * @return string
      */
     public static function toCamelCase($name, $Pascal = false) {
@@ -61,8 +65,10 @@ abstract class Toolkit {
 
     /**
      * Convert $name to snake_case
-     * @param string $name
+     *
+     * @param string  $name
      * @param boolean $Upper_First_Letter
+     *
      * @return string
      */
     public static function to_snake_case($name, $Upper_First_Letter = false) {
@@ -76,6 +82,7 @@ abstract class Toolkit {
 
     /**
      * @param $word
+     *
      * @return mixed|string
      */
     public static function pluralize($word) {
@@ -150,7 +157,16 @@ abstract class Toolkit {
             if (!is_resource(self::$logFile)) {
                 self::$logFile = fopen(X_RUNTIME_ROOT . '/app.log', 'a+');
             }
-            if (is_callable($msg)) {
+            if ($msg instanceof \Throwable) {
+                $logMessage = sprintf(
+                    "%s is thrown at %s(%d) with message: %s\nCall stack:\n%s",
+                    get_class($msg),
+                    $msg->getFile(),
+                    $msg->getLine(),
+                    $msg->getMessage(),
+                    $msg->getTraceAsString()
+                );
+            } elseif (is_callable($msg)) {
                 $logMessage = call_user_func($msg);
             } elseif (is_array($msg) || is_object($msg)) {
                 ob_start();
@@ -186,6 +202,7 @@ abstract class Toolkit {
 
     /**
      * @param string $name
+     *
      * @return string
      */
     private static function extractWords($name) {
