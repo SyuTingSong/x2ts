@@ -9,6 +9,7 @@ use JsonSerializable;
 use x2ts\Component;
 use x2ts\db\IDataBase;
 use x2ts\db\SqlBuilder;
+use x2ts\IAssignable;
 use x2ts\MethodNotImplementException;
 use x2ts\ObjectIterator;
 use x2ts\Toolkit;
@@ -30,7 +31,11 @@ use x2ts\ComponentFactory;
  * @property-read array $relations
  * @property-read SqlBuilder $builder
  */
-class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSerializable {
+class Model extends Component implements
+    ArrayAccess,
+    IteratorAggregate,
+    JsonSerializable,
+    IAssignable {
     const INSERT_NORMAL = 0;
     const INSERT_IGNORE = 1;
     const INSERT_UPDATE = 2;
@@ -612,18 +617,16 @@ class Model extends Component implements ArrayAccess, IteratorAggregate, JsonSer
     }
 
     /**
-     * @param array|ArrayAccess $array
+     * @param array $array
      * @return $this
      */
-    public function assign($array) {
+    public function assign(array $array) {
         if ($this->isNewRecord && !empty($array[$this->pkName])) {
             $this->load($array[$this->pkName]);
         }
 
-        foreach ($this->_properties as $key => $value) {
-            if (array_key_exists($key, $array)) {
-                $this->_propertySet($key, $array[$key]);
-            }
+        foreach ($array as $key => $value) {
+            $this->__set($key, $value);
         }
         return $this;
     }

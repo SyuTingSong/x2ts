@@ -17,11 +17,12 @@ use ReflectionClass;
  * @method static rpc\RPC rpc(string $package = null)
  * @method static daemon\Daemon daemon(array $settings = [])
  * @method static Utils utils()
+ * @method static validator\Validator validator(array $vars)
  */
 abstract class ComponentFactory extends Component {
     protected static $_conf = array(
         'component' => array(
-            'router' => array(
+            'router'    => array(
                 'class'     => '\\x2ts\\app\\Router',
                 'singleton' => true,
                 'conf'      => array(
@@ -31,14 +32,14 @@ abstract class ComponentFactory extends Component {
                     'baseUri'               => '/',
                 ),
             ),
-            'db'     => array(
+            'db'        => array(
                 'class'     => '\\x2ts\\db\\SQLite',
                 'singleton' => true,
                 'conf'      => array(
                     'filename' => X_RUNTIME_ROOT . '/sqlite.db',
                 ),
             ),
-            'model'  => array(
+            'model'     => array(
                 'class'     => '\x2ts\db\orm\Model',
                 'singleton' => false,
                 'conf'      => array(
@@ -56,7 +57,7 @@ abstract class ComponentFactory extends Component {
                     ),
                 ),
             ),
-            'cache'  => array(
+            'cache'     => array(
                 'class'     => '\\x2ts\\MCache',
                 'singleton' => true,
                 'conf'      => array(
@@ -66,14 +67,14 @@ abstract class ComponentFactory extends Component {
                     'keyPrefix'  => '',
                 ),
             ),
-            'cc'     => array(
+            'cc'        => array(
                 'class'     => '\\x2ts\\CICache',
                 'singleton' => true,
                 'conf'      => array(
                     'cacheDir' => X_RUNTIME_ROOT . '/cache',
                 ),
             ),
-            'view'   => array(
+            'view'      => array(
                 'class'     => '\\x2ts\\view\\Hail',
                 'singleton' => true,
                 'conf'      => array(
@@ -85,7 +86,7 @@ abstract class ComponentFactory extends Component {
                     'cacheDuration' => 60, // page cache duration, second
                 ),
             ),
-            'rpc'    => array(
+            'rpc'       => array(
                 'class'     => '\\x2ts\\rpc\\RPC',
                 'singleton' => true,
                 'conf'      => array(
@@ -103,7 +104,7 @@ abstract class ComponentFactory extends Component {
                     'maxRequest' => 500,
                 ),
             ),
-            'daemon' => array(
+            'daemon'    => array(
                 'class'     => '\\x2ts\\daemon\\Daemon',
                 'singleton' => false,
                 'conf'      => array(
@@ -118,7 +119,7 @@ abstract class ComponentFactory extends Component {
                     'group'         => '',
                 ),
             ),
-            'utils'  => array(
+            'utils'     => array(
                 'class'     => '\\x2ts\\Utils',
                 'singleton' => true,
                 'conf'      => array(
@@ -128,6 +129,13 @@ abstract class ComponentFactory extends Component {
                         'dn_base'  => 'ou=staffs,dc=example,dc=com',
                         'auth_key' => 'uid',
                     ),
+                ),
+            ),
+            'validator' => array(
+                'class'     => '\\x2ts\\validator\\Validator',
+                'singleton' => false,
+                'conf'      => array(
+                    'encoding' => 'UTF-8',
                 ),
             ),
         ),
