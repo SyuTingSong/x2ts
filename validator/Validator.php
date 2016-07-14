@@ -381,11 +381,11 @@ class Validator extends Component {
                 $this->_messages[] = $this->message;
             }
         }
-        if (!$this->_isValid && is_callable($onDataInvalid)) {
+        if (!$shell->_isValid && is_callable($onDataInvalid)) {
             $onDataInvalid($shell->messages, $shell);
         }
 
-        return $this->shell;
+        return $shell;
     }
 
     /**
