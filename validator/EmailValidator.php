@@ -12,8 +12,7 @@ namespace x2ts\validator;
 class EmailValidator extends StringValidator {
     public function __construct($var, $shell = null) {
         parent::__construct($var, $shell);
-        if (filter_var($var, FILTER_VALIDATE_EMAIL) === false) {
-            $this->_isValid = false;
-        }
+        $this->_isValid = $this->_isValid &&
+            filter_var($this->_unsafeVar, FILTER_VALIDATE_EMAIL) === false;
     }
 }

@@ -12,8 +12,10 @@ namespace x2ts\validator;
 class UrlValidator extends StringValidator {
     public function __construct($var, $shell = null) {
         parent::__construct($var, $shell);
-        if (filter_var($var, FILTER_VALIDATE_URL) === false) {
-            $this->_isValid = false;
+        if ($this->_isValid) {
+            if (filter_var($this->_unsafeVar, FILTER_VALIDATE_URL) === false) {
+                $this->_isValid = false;
+            }
         }
     }
 }

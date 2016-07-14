@@ -20,6 +20,6 @@ class BooleanValidator extends Validator {
      */
     public function __construct($var, $shell = null) {
         parent::__construct($var, $shell);
-        $this->_unsafeVar = filter_var($var, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+        $this->_unsafeVar = filter_var($this->_unsafeVar, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
     }
 }

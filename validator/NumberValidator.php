@@ -9,23 +9,13 @@
 namespace x2ts\validator;
 
 
-class NumberValidator extends Validator {
-    /**
-     * @param mixed $var
-     * @param null $shell
-     */
-    public function __construct($var, $shell = null) {
-        parent::__construct($var, $shell);
-        if (!is_numeric($var) && !ctype_xdigit($var)) {
-            $this->_isValid = false;
-        }
-    }
-
+abstract class NumberValidator extends Validator {
     /**
      * The wrapped var MUST greater than $num
      *
      * @param int|float $num
-     * @param bool $orEqual
+     * @param bool      $orEqual
+     *
      * @return $this
      */
     public function gt($num, $orEqual = false) {
@@ -45,7 +35,8 @@ class NumberValidator extends Validator {
      * The wrapped var MUST less than $num
      *
      * @param int|float $num
-     * @param bool $orEqual
+     * @param bool      $orEqual
+     *
      * @return $this
      */
     public function lt($num, $orEqual = false) {
@@ -65,6 +56,7 @@ class NumberValidator extends Validator {
      * The wrapped var MUST equal $num
      *
      * @param int|float $num
+     *
      * @return $this
      */
     public function eq($num) {
@@ -82,6 +74,7 @@ class NumberValidator extends Validator {
      * The wrapped var MUST NOT equal $num
      *
      * @param int|float $num
+     *
      * @return $this
      */
     public function ne($num) {
@@ -100,8 +93,9 @@ class NumberValidator extends Validator {
      *
      * @param int|float $min
      * @param int|float $max
-     * @param bool $includeMin
-     * @param bool $includeMax
+     * @param bool      $includeMin
+     * @param bool      $includeMax
+     *
      * @return $this
      */
     public function between($min, $max, $includeMin = true, $includeMax = true) {
@@ -125,6 +119,7 @@ class NumberValidator extends Validator {
      * The wrapped var MUST in the specified enum
      *
      * @param array $enum
+     *
      * @return $this
      */
     public function inEnum($enum) {

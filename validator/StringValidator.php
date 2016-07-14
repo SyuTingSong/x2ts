@@ -18,6 +18,8 @@ class StringValidator extends Validator {
         parent::__construct($var, $shell);
         if (!is_string($var)) {
             $this->_isValid = false;
+        } else if ($this->conf['autoTrim']) {
+            $this->_unsafeVar = trim($this->_unsafeVar);
         }
     }
 

@@ -25,6 +25,7 @@ use x2ts\IAssignable;
 class Validator extends Component {
     protected static $_conf = array(
         'encoding' => 'UTF-8',
+        'autoTrim' => true,
     );
 
     protected $validated = false;
@@ -115,11 +116,6 @@ class Validator extends Component {
      */
     public function __construct($var, $shell = null) {
         $this->_unsafeVar = $var;
-        if ($shell instanceof Validator) {
-            $this->shell = $shell;
-        } else {
-            $this->shell = $this;
-        }
         parent::__construct();
     }
 
@@ -176,16 +172,6 @@ class Validator extends Component {
     /**
      * @param $key
      *
-     * @return NumberValidator
-     */
-    public function num($key) {
-        return $this->shell->subValidators[$key] =
-            new NumberValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
-    }
-
-    /**
-     * @param $key
-     *
      * @return FloatValidator
      */
     public function float($key) {
@@ -201,26 +187,6 @@ class Validator extends Component {
     public function int($key) {
         return $this->shell->subValidators[$key] =
             new IntegerValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return DecimalValidator
-     */
-    public function dec($key) {
-        return $this->shell->subValidators[$key] =
-            new DecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return HexadecimalValidator
-     */
-    public function hex($key) {
-        return $this->shell->subValidators[$key] =
-            new HexadecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
     }
 
     /**

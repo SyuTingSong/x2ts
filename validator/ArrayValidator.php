@@ -11,9 +11,7 @@ namespace x2ts\validator;
 class ArrayValidator extends Validator {
     public function __construct($var, $shell = null) {
         parent::__construct($var, $shell);
-        if (0 === count($var)) {
-            $this->_unsafeVar = array();
-        } else if (!is_array($var)) {
+        if (!is_array($var)) {
             $this->_isValid = false;
         }
     }
