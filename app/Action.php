@@ -7,6 +7,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use x2ts\http\Request;
 use x2ts\http\Response;
+use x2ts\TEventDispatcher;
 use x2ts\TGetterSetter;
 use x2ts\Toolkit;
 use x2ts\ComponentFactory;
@@ -18,6 +19,7 @@ use x2ts\ComponentFactory;
  */
 abstract class Action {
     use TGetterSetter;
+    use TEventDispatcher;
 
     /**
      * @var Request @req
@@ -35,7 +37,10 @@ abstract class Action {
         $this->request = $request;
         $this->response = $response;
         $this->suffix = $suffix;
+        $this->init();
     }
+
+    public function init() { }
 
     private function _run(&$pArgs) {
         $method = Toolkit::toCamelCase('http ' . strtolower($this->server('REQUEST_METHOD', 'GET')));
@@ -81,6 +86,7 @@ abstract class Action {
         Toolkit::trace("App Start: "
             . $this->server('REQUEST_METHOD') . ' ' . $this->server('REQUEST_URI')
         );
+        $this->dispatch('PreAction', $this);
         try {
             $this->_run($pArgs);
         } catch (ApplicationExitException $e) {
@@ -90,12 +96,23 @@ abstract class Action {
                 Toolkit::trace('App end without message' . "\n" . $e->getTraceAsString());
             }
         } catch (Exception $e) {
-            Toolkit::log($e, X_LOG_ERROR, 'x2ts\app\Action::run');
+            Toolkit::log($e, X_LOG_ERROR);
         }
+        $this->dispatch('PostAction', $this);
         $this->response->response();
         Toolkit::trace("App Exit: "
             . $this->server('REQUEST_METHOD') . ' ' . $this->server('REQUEST_URI')
         );
+    }
+
+    public function onPreAction(callable $callback, $state = null) {
+        $this->on('PreAction', $callback, $state);
+        return $this;
+    }
+
+    public function onPostAction(callable $callback, $state = null) {
+        $this->on('PostAction', $callback, $state);
+        return $this;
     }
 
     /**
