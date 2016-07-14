@@ -115,6 +115,7 @@ class Validator extends Component {
      * @param Validator $shell
      */
     public function __construct($var, $shell = null) {
+        $this->shell = $shell instanceof Validator ? $shell : $this;
         $this->_unsafeVar = $var;
         parent::__construct();
     }
