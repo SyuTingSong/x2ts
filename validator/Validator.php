@@ -14,10 +14,11 @@ use x2ts\IAssignable;
 
 /**
  * Class Validator
+ *
  * @package xts
  *
- * @property-read bool $isValid
- * @property-read bool $isEmpty
+ * @property-read bool  $isValid
+ * @property-read bool  $isEmpty
  * @property-read array $messages
  * @property-read mixed $safeVar
  */
@@ -25,67 +26,82 @@ class Validator extends Component {
     protected static $_conf = array(
         'encoding' => 'UTF-8',
     );
+
     protected $validated = false;
+
     /**
      * @var bool
      */
     protected $_isValid = true;
+
     /**
      * @var bool
      */
     protected $_isEmpty = false;
+
     /**
      * the wrapped var
      *
      * @var mixed
      */
     protected $_unsafeVar = null;
+
     /**
      * contains the validated var
      *
      * @var mixed
      */
     protected $_safeVar = null;
+
     /**
      * @var bool
      */
     protected $onErrorSet = false;
+
     /**
      * @var mixed
      */
     protected $onErrorSetValue = null;
+
     /**
      * @var bool
      */
     protected $onEmptySet = false;
+
     /**
      * @var mixed
      */
     protected $onEmptySetValue = null;
+
     /**
      * $shell always ref to the most outside Valley
      *
      * @var Validator
      */
     protected $shell = null;
+
     /**
      * Contains the sub valleys for each key.
      *
      * @var array
      */
     private $subValidators = array();
+
     /**
      * @var string
      */
     private $errorMessage = '';
+
     /**
      * @var string
      */
     private $emptyMessage = '';
+
     /**
      * @var string
      */
     private $message = '';
+
     /**
      * Contains the message reported by sub valleys
      *
@@ -94,7 +110,7 @@ class Validator extends Component {
     private $_messages = array();
 
     /**
-     * @param array $var
+     * @param array     $var
      * @param Validator $shell
      */
     public function __construct($var, $shell = null) {
@@ -109,6 +125,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return StringValidator
      */
     public function str($key) {
@@ -118,6 +135,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return DateValidator
      */
     public function date($key) {
@@ -127,6 +145,7 @@ class Validator extends Component {
 
     /**
      * @param string $key
+     *
      * @return EmailValidator
      */
     public function email($key) {
@@ -136,6 +155,7 @@ class Validator extends Component {
 
     /**
      * @param string $key
+     *
      * @return UrlValidator
      */
     public function url($key) {
@@ -145,6 +165,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return TelValidator
      */
     public function tel($key) {
@@ -154,6 +175,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return NumberValidator
      */
     public function num($key) {
@@ -163,6 +185,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return FloatValidator
      */
     public function float($key) {
@@ -172,6 +195,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return IntegerValidator
      */
     public function int($key) {
@@ -181,6 +205,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return DecimalValidator
      */
     public function dec($key) {
@@ -190,6 +215,7 @@ class Validator extends Component {
 
     /**
      * @param $key
+     *
      * @return HexadecimalValidator
      */
     public function hex($key) {
@@ -199,6 +225,7 @@ class Validator extends Component {
 
     /**
      * @param string $key
+     *
      * @return BooleanValidator
      */
     public function bool($key) {
@@ -208,6 +235,7 @@ class Validator extends Component {
 
     /**
      * @param string $key
+     *
      * @return ArrayValidator
      */
     public function arr($key) {
@@ -219,6 +247,7 @@ class Validator extends Component {
      * Report $message if the wrapped var is invalid.
      *
      * @param string $message
+     *
      * @return $this
      */
     public function onErrorReport($message) {
@@ -230,6 +259,7 @@ class Validator extends Component {
      * Tell Valley to use $value instead of wrapped var if it's invalid.
      *
      * @param mixed $value
+     *
      * @return $this
      */
     public function onErrorSet($value) {
@@ -242,6 +272,7 @@ class Validator extends Component {
      * Report $message if the wrapped var is empty.
      *
      * @param string $message
+     *
      * @return $this
      */
     public function onEmptyReport($message) {
@@ -254,6 +285,7 @@ class Validator extends Component {
      * This method won't change the isValid property.
      *
      * @param mixed $value
+     *
      * @return $this
      */
     public function onEmptySet($value) {
@@ -278,13 +310,17 @@ class Validator extends Component {
         return $this->_safeVar;
     }
 
+    private function isEmptyString($var) {
+        return null === $var || '' === $var;
+    }
+
     /**
      * Start validate the valley itself
      *
      * @return void
      */
     protected function selfValidate() {
-        if (null === $this->_unsafeVar || '' === $this->_unsafeVar) {
+        if ($this->isEmptyString($this->_unsafeVar)) {
             if ($this->onEmptySet) {
                 $this->_safeVar = $this->onEmptySetValue;
                 $this->_isValid = true;
@@ -295,7 +331,9 @@ class Validator extends Component {
             } else {
                 $this->_isEmpty = true;
             }
-        } else if (!$this->_isValid) {
+        }
+
+        if (!$this->_isValid && $this->isEmptyString($this->message)) {
             if ($this->onErrorSet) {
                 $this->_safeVar = $this->onErrorSetValue;
                 $this->_isValid = true;
@@ -305,6 +343,7 @@ class Validator extends Component {
         } else {
             $this->_safeVar = $this->_unsafeVar;
         }
+
         $this->validated = true;
     }
 
@@ -313,6 +352,7 @@ class Validator extends Component {
      * include the sub valleys
      *
      * @param callable $onDataInvalid
+     *
      * @return Validator
      */
     final public function validate(callable $onDataInvalid = null):Validator {
@@ -320,7 +360,7 @@ class Validator extends Component {
         if (count($shell->subValidators)) {
             /**
              * @var Validator $validator
-             * @var string $key
+             * @var string    $key
              */
             foreach ($shell->subValidators as $key => $validator) {
                 $validator->selfValidate();
@@ -350,7 +390,8 @@ class Validator extends Component {
 
     /**
      * @param IAssignable $target
-     * @param callable $onDataInvalid
+     * @param callable    $onDataInvalid
+     *
      * @return IAssignable $target
      */
     final public function assignTo(
