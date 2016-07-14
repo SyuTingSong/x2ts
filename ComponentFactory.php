@@ -7,6 +7,7 @@ use ReflectionClass;
 
 /**
  * Class ComponentFactory
+ *
  * @package x2ts
  * @method static app\Router router()
  * @method static db\IDataBase db()
@@ -136,14 +137,17 @@ abstract class ComponentFactory extends Component {
                 'singleton' => false,
                 'conf'      => array(
                     'encoding' => 'UTF-8',
+                    'autoTrim' => true,
                 ),
             ),
         ),
     );
+
     private static $_singletons;
 
     /**
      * @param $componentId
+     *
      * @return bool|Component
      * @throws \x2ts\ComponentNotFoundException
      */
@@ -162,7 +166,8 @@ abstract class ComponentFactory extends Component {
 
     /**
      * @param string $name
-     * @param array $args
+     * @param array  $args
+     *
      * @return \x2ts\IComponent
      * @throws \x2ts\ComponentNotFoundException
      */
@@ -184,8 +189,9 @@ abstract class ComponentFactory extends Component {
 
     /**
      * @param string $class
-     * @param array $args
-     * @param array $conf
+     * @param array  $args
+     * @param array  $conf
+     *
      * @throws InvalidArgumentException
      * @return \x2ts\IComponent
      */
