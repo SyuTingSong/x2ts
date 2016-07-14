@@ -15,4 +15,14 @@ use Exception;
  * Class ValidatorException
  * @package x2ts\validator
  */
-class ValidatorException extends Exception {}
+class ValidatorException extends Exception {
+    private $messages = [];
+    public function __construct(array $messages) {
+        $this->messages = $messages;
+        $message = reset($messages);
+        parent::__construct($message);
+    }
+    public function getMessages() {
+        return $this->messages;
+    }
+}

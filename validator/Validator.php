@@ -320,6 +320,7 @@ class Validator extends Component {
      * @param callable $onDataInvalid
      *
      * @return Validator
+     * @throws \x2ts\validator\ValidatorException
      */
     final public function validate(callable $onDataInvalid = null):Validator {
         $shell = $this->shell;
@@ -347,8 +348,12 @@ class Validator extends Component {
                 $this->_messages[] = $this->message;
             }
         }
-        if (!$shell->_isValid && is_callable($onDataInvalid)) {
-            $onDataInvalid($shell->messages, $shell);
+        if (!$shell->_isValid) {
+            if (is_callable($onDataInvalid)) {
+                $onDataInvalid($shell->messages, $shell);
+            } else {
+                throw new ValidatorException($shell->messages);
+            }
         }
 
         return $shell;
