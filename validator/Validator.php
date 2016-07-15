@@ -291,6 +291,7 @@ class Validator extends Component {
             if ($this->onEmptySet) {
                 $this->_safeVar = $this->onEmptySetValue;
                 $this->_isValid = true;
+                goto finish;
             } else if ($this->emptyMessage) {
                 $this->_isValid = false;
                 $this->message = $this->emptyMessage;
@@ -311,6 +312,7 @@ class Validator extends Component {
             $this->_safeVar = $this->_unsafeVar;
         }
 
+        finish:
         $this->validated = true;
     }
 
