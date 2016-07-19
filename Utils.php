@@ -10,6 +10,7 @@ namespace x2ts;
 
 /**
  * Class Utils
+ *
  * @package x2ts
  */
 class Utils extends Component {
@@ -33,5 +34,12 @@ class Utils extends Component {
         $r = @ldap_bind($c, $dn, $password);
         ldap_close($c);
         return (bool) $r;
+    }
+
+    public function is_lan_ip(string $ipv4):bool {
+        $long = ip2long($ipv4);
+        return $long & 0xff000000 === 0xa0000000 // 10.0.0.0/8
+            || $long & 0xfff00000 === 0xac100000 // 172.16.0.0/12
+            || $long & 0xffff0000 === 0xc0a80000;// 192.168.0.0/16
     }
 }
