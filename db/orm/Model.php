@@ -17,19 +17,20 @@ use x2ts\ComponentFactory;
 
 /**
  * Class Model
+ *
  * @package x2ts
- * @property-read array $properties
+ * @property-read array       $properties
  * @property-read TableSchema $tableSchema
- * @property-read IDataBase $db
- * @property-read string $modelName
- * @property-read bool $isNewRecord
- * @property-read mixed $oldPK
- * @property-read mixed $pk
- * @property-read string $pkName
- * @property-read string $tableName
- * @property-read array $modified
- * @property-read array $relations
- * @property-read SqlBuilder $builder
+ * @property-read IDataBase   $db
+ * @property-read string      $modelName
+ * @property-read bool        $isNewRecord
+ * @property-read mixed       $oldPK
+ * @property-read mixed       $pk
+ * @property-read string      $pkName
+ * @property-read string      $tableName
+ * @property-read array       $modified
+ * @property-read array       $relations
+ * @property-read SqlBuilder  $builder
  */
 class Model extends Component implements
     ArrayAccess,
@@ -40,38 +41,47 @@ class Model extends Component implements
     const INSERT_IGNORE = 1;
     const INSERT_UPDATE = 2;
     const INSERT_REPLACE = 3;
+
     /**
      * @var bool
      */
     protected $_isNewRecord = true;
+
     /**
      * @var mixed
      */
     protected $_oldPK = null;
+
     /**
      * @var array
      */
     protected $_properties = array();
+
     /**
      * @var array
      */
     protected $_modified = array();
+
     /**
      * @var array
      */
     protected $_relationObjects = array();
+
     /**
      * @var TableSchema
      */
     protected $_tableSchema;
+
     /**
      * @var string
      */
     protected $_modelName;
+
     /**
      * @var string
      */
     protected $_tableName;
+
     /**
      * @var array
      */
@@ -89,6 +99,7 @@ class Model extends Component implements
             'duration' => 60,
         ),
     );
+
     /**
      * @var SqlBuilder
      */
@@ -104,6 +115,7 @@ class Model extends Component implements
 
     /**
      * @param string $modelName
+     *
      * @return Model
      */
     public static function getInstance($modelName) {
@@ -123,6 +135,7 @@ class Model extends Component implements
 
     /**
      * @param mixed $pk
+     *
      * @return null|Model
      */
     public function load($pk) {
@@ -138,6 +151,7 @@ class Model extends Component implements
 
     /**
      * @param int $scenario [optional]
+     *
      * @return $this
      * @throws MethodNotImplementException
      */
@@ -195,6 +209,7 @@ class Model extends Component implements
 
     /**
      * @param int $pk
+     *
      * @return int
      */
     public function remove($pk = null) {
@@ -210,9 +225,10 @@ class Model extends Component implements
     }
 
     /**
-     * @param string $condition
-     * @param array $params
+     * @param string  $condition
+     * @param array   $params
      * @param boolean $clone
+     *
      * @return null|Model
      */
     public function one(string $condition = null, array $params = [], $clone = false) {
@@ -231,10 +247,11 @@ class Model extends Component implements
     }
 
     /**
-     * @param string $condition
-     * @param array $params
+     * @param string   $condition
+     * @param array    $params
      * @param null|int $offset
      * @param null|int $limit
+     *
      * @return array
      */
     public function many($condition = null, $params = array(), $offset = null, $limit = null) {
@@ -263,7 +280,8 @@ class Model extends Component implements
 
     /**
      * @param string $condition
-     * @param array $params
+     * @param array  $params
+     *
      * @return int|bool
      */
     public function count($condition = null, $params = array()) {
@@ -332,8 +350,9 @@ class Model extends Component implements
     }
 
     /**
-     * @param null|int $duration
+     * @param null|int    $duration
      * @param null|string $key
+     *
      * @return CachedModel
      * @internal param callable $callback
      */
@@ -514,11 +533,12 @@ class Model extends Component implements
     }
 
     /**
-     * @param $name
+     * @param        $name
      * @param string $condition
-     * @param array $params
-     * @param int $offset
-     * @param int $limit
+     * @param array  $params
+     * @param int    $offset
+     * @param int    $limit
+     *
      * @return Model|array|null
      */
     protected function loadRelationObj(
@@ -560,10 +580,13 @@ class Model extends Component implements
     /**
      * (PHP 5 &gt;= 5.0.0)<br/>
      * Whether a offset exists
+     *
      * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     *
      * @param mixed $offset <p>
-     * An offset to check for.
-     * </p>
+     *                      An offset to check for.
+     *                      </p>
+     *
      * @return boolean true on success or false on failure.
      * </p>
      * <p>
@@ -576,10 +599,13 @@ class Model extends Component implements
     /**
      * (PHP 5 &gt;= 5.0.0)<br/>
      * Offset to retrieve
+     *
      * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     *
      * @param mixed $offset <p>
-     * The offset to retrieve.
-     * </p>
+     *                      The offset to retrieve.
+     *                      </p>
+     *
      * @return mixed Can return all value types.
      */
     public function offsetGet($offset) {
@@ -589,13 +615,16 @@ class Model extends Component implements
     /**
      * (PHP 5 &gt;= 5.0.0)<br/>
      * Offset to set
+     *
      * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     *
      * @param mixed $offset <p>
-     * The offset to assign the value to.
-     * </p>
-     * @param mixed $value <p>
-     * The value to set.
-     * </p>
+     *                      The offset to assign the value to.
+     *                      </p>
+     * @param mixed $value  <p>
+     *                      The value to set.
+     *                      </p>
+     *
      * @return void
      */
     public function offsetSet($offset, $value) {
@@ -605,10 +634,13 @@ class Model extends Component implements
     /**
      * (PHP 5 &gt;= 5.0.0)<br/>
      * Offset to unset
+     *
      * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     *
      * @param mixed $offset <p>
-     * The offset to unset.
-     * </p>
+     *                      The offset to unset.
+     *                      </p>
+     *
      * @throws MethodNotImplementException
      * @return void
      */
@@ -618,6 +650,7 @@ class Model extends Component implements
 
     /**
      * @param array $array
+     *
      * @return $this
      */
     public function assign(array $array) {
@@ -632,9 +665,11 @@ class Model extends Component implements
     }
 
     /**
-     * @param string $name The name of the property to be set
-     * @param mixed $value The value of the property
-     * @return int|bool Returns the number of changed properties, or false if $name is invalid
+     * @param string $name  The name of the property to be set
+     * @param mixed  $value The value of the property
+     *
+     * @return int|bool Returns the number of changed properties, or false if
+     *                  $name is invalid
      */
     protected function _propertySet($name, $value) {
         if (array_key_exists($name, $this->_properties)) {
@@ -652,24 +687,43 @@ class Model extends Component implements
     /**
      * (PHP 5 &gt;= 5.0.0)<br/>
      * Retrieve an external iterator
+     *
      * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
-     * @return \Traversable An instance of an object implementing <b>Iterator</b> or
-     * <b>Traversable</b>
+     * @return \Traversable An instance of an object implementing
+     *                      <b>Iterator</b> or
+     *       <b>Traversable</b>
      */
     public function getIterator() {
         return new ObjectIterator($this, $this->getExportProperties());
     }
 
+    protected static $_export = [];
+
     protected function getExportProperties() {
-        return array_keys($this->_properties);
+        $base = array_keys($this->_properties);
+        $within = [];
+        $without = [];
+        foreach (static::$_export as $act) {
+            $act = trim($act);
+            if ($act[0] === '+') {
+                $within[] = trim(substr($act, 1));
+            } elseif ($act[0] === '-') {
+                $without[] = trim(substr($act, 1));
+            } else {
+                $within[] = $act;
+            }
+        }
+
+        return array_diff(array_merge($base, $within), $without);
     }
 
     /**
      * (PHP 5 &gt;= 5.4.0)<br/>
      * Specify data which should be serialized to JSON
+     *
      * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
      * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
+     *       which is a value of any type other than a resource.
      */
     public function jsonSerialize() {
         $jsonArray = array();
