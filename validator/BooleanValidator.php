@@ -15,7 +15,7 @@ namespace x2ts\validator;
 class BooleanValidator extends Validator {
     /**
      * BooleanValidator constructor.
-     * @param array $var
+     * @param mixed $var
      * @param Validator $shell
      */
     public function __construct($var, $shell = null) {
