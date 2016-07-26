@@ -11,13 +11,19 @@ namespace x2ts\db\orm;
 
 use x2ts\Toolkit;
 
+/**
+ * Class MySQLTableSchema
+ *
+ * @package x2ts\db\orm
+ */
 class MySQLTableSchema extends TableSchema {
     protected static $tables = array();
 
     public function load() {
         $db = $this->db;
         $cols = $db->query(
-            "SELECT * FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA`=:s AND `TABLE_NAME`=:n",
+            'SELECT * FROM `information_schema`.`COLUMNS`' .
+            ' WHERE `TABLE_SCHEMA`=:s AND `TABLE_NAME`=:n',
             array(
                 ':s' => $db->getDbName(),
                 ':n' => $this->name,
@@ -26,76 +32,89 @@ class MySQLTableSchema extends TableSchema {
         $columns = array();
         $keys = array();
         $relations = array();
-        foreach($cols as $col) {
+        foreach ($cols as $col) {
             $column = new Column();
             $column->name = $col['COLUMN_NAME'];
             $column->type = $col['DATA_TYPE'];
             $column->canBeNull = $col['IS_NULLABLE'] === 'YES';
             $column->defaultValue = $col['COLUMN_DEFAULT'];
-            if($col['COLUMN_KEY'] === 'PRI') {
+            if ($col['COLUMN_KEY'] === 'PRI') {
                 $column->isPK = true;
                 $keys['PK'] = $col['COLUMN_NAME'];
             }
-            if($col['COLUMN_KEY'] === 'UNI') {
+            if ($col['COLUMN_KEY'] === 'UNI') {
                 $column->isUQ = true;
                 $keys['UQ'][] = $col['COLUMN_NAME'];
             }
-            if($col['COLUMN_KEY'] === 'MUL') {
+            if ($col['COLUMN_KEY'] === 'MUL') {
                 $keys['MU'][] = $col['COLUMN_NAME'];
             }
             $columns[$column->name] = $column;
         }
         $rels = $db->query(
-            'SELECT * FROM `information_schema`.`KEY_COLUMN_USAGE` WHERE `TABLE_SCHEMA`=:s AND `TABLE_NAME`=:n AND `REFERENCED_TABLE_NAME` IS NOT NULL',
+            'SELECT * FROM `information_schema`.`KEY_COLUMN_USAGE` ' .
+            'WHERE `TABLE_SCHEMA`=:s AND `TABLE_NAME`=:n AND ' .
+            '`REFERENCED_TABLE_NAME` IS NOT NULL',
             array(
                 ':s' => $db->getDbName(),
                 ':n' => $this->name,
             )
         );
-        foreach($rels as $rel) {
+        foreach ($rels as $rel) {
             $relation = new BelongToRelation();
             $relation->property = $rel['COLUMN_NAME'];
             $relation->foreignTableName = $rel['REFERENCED_TABLE_NAME'];
             $relation->foreignModelName = $rel['REFERENCED_TABLE_NAME'];
             $relation->foreignTableField = $rel['REFERENCED_COLUMN_NAME'];
-            if(strrpos($relation->property, '_id')) {
-                $relation->name = substr($relation->property, 0, strlen($relation->property) - 3);
+            if (strrpos($relation->property, '_id')) {
+                $relation->name = substr($relation->property, 0, -3);
             } else {
                 $relation->name = $relation->foreignTableName;
             }
             $relations[$relation->name] = $relation;
         }
         $rels = $db->query(
-            'SELECT c.TABLE_NAME, c.COLUMN_NAME, c.COLUMN_KEY FROM information_schema.KEY_COLUMN_USAGE AS kcu INNER JOIN information_schema.COLUMNS AS c USING (TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME) WHERE TABLE_SCHEMA=:s AND REFERENCED_TABLE_NAME=:n',
+            <<<'SQL'
+SELECT
+  kcu.REFERENCED_COLUMN_NAME,
+  c.TABLE_NAME,
+  c.COLUMN_NAME,
+  c.COLUMN_KEY
+FROM information_schema.KEY_COLUMN_USAGE AS kcu
+  INNER JOIN information_schema.COLUMNS AS c
+  USING (TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME)
+WHERE TABLE_SCHEMA=:s AND REFERENCED_TABLE_NAME=:n
+SQL
+            ,
             array(
                 ':s' => $db->getDbName(),
                 ':n' => $this->name,
             )
         );
-        foreach($rels as $rel) {
-            if($rel['COLUMN_KEY'] == 'MUL') {
+        foreach ($rels as $rel) {
+            if ($rel['COLUMN_KEY'] === 'MUL') {
                 $relation = new HasManyRelation();
-            } else if($rel['COLUMN_KEY'] == 'PRI' || $rel['COLUMN_KEY'] == 'UNI'){
+            } else if ($rel['COLUMN_KEY'] === 'PRI' || $rel['COLUMN_KEY'] === 'UNI') {
                 $relation = new HasOneRelation();
             } else {
                 continue;
             }
+            $relation->property = $rel['REFERENCED_COLUMN_NAME'];
             $relation->foreignTableName = $rel['TABLE_NAME'];
             $relation->foreignModelName = $rel['TABLE_NAME'];
             $relation->foreignTableField = $rel['COLUMN_NAME'];
             $relation->name = ($relation instanceof HasManyRelation) ?
-                Toolkit::pluralize($rel['TABLE_NAME']):$rel['TABLE_NAME'];
+                Toolkit::pluralize($rel['TABLE_NAME']) : $rel['TABLE_NAME'];
             $relations[$relation->name] = $relation;
         }
         static::$tables[$this->name] = array(
-            'columns' => $columns,
-            'keys' => $keys,
+            'columns'   => $columns,
+            'keys'      => $keys,
             'relations' => $relations,
         );
-        if($this->conf['useSchemaCache']) {
+        if ($this->conf['useSchemaCache']) {
             $key = $this->getHash();
             $this->cache->set($key, static::$tables[$this->name], $this->conf['schemaCacheDuration']);
         }
     }
-
 }

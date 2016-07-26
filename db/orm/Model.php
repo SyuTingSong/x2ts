@@ -549,30 +549,9 @@ class Model extends Component implements
         int $limit = 200
     ) {
         Toolkit::trace('Loading relation object');
-        /** @var Relation $relation */
         $relation = $this->relations[$name];
-        $model = Model::getInstance($relation->foreignModelName);
-        switch (true) {
-            case $relation instanceof BelongToRelation:
-                $pk = $this->properties[$relation->property];
-                Toolkit::trace("Load belonging object {$relation->name} with PK value is {$pk}");
-                return $model->load($pk);
-            case $relation instanceof HasOneRelation:
-                $c = $relation->foreignTableField . '=:_fid';
-                if ($condition) {
-                    $c .= " AND $condition";
-                }
-                $p = array_merge([':_fid' => $this->pk], $params);
-                Toolkit::trace("Load relation object {$relation->name}");
-                return $model->one($c, $p);
-            case $relation instanceof HasManyRelation:
-                $c = $relation->foreignTableField . '=:_fid';
-                if ($condition) {
-                    $c .= " AND $condition";
-                }
-                $p = array_merge([':_fid' => $this->pk], $params);
-                Toolkit::trace("Load relation objects {$relation->name}");
-                return $model->many($c, $p, $offset, $limit);
+        if ($relation instanceof Relation) {
+            return $relation->fetchRelated($this, $condition, $params, $offset, $limit);
         }
         return null;
     }
