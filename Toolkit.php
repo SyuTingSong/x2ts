@@ -168,7 +168,7 @@ abstract class Toolkit {
                 );
             } elseif (is_callable($msg)) {
                 $logMessage = call_user_func($msg);
-            } elseif (is_array($msg) || is_object($msg)) {
+            } elseif (!is_string($msg)) {
                 ob_start();
                 /** @noinspection ForgottenDebugOutputInspection */
                 var_dump($msg);
