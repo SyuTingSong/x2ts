@@ -11,6 +11,8 @@ namespace {
                 }
         }
 
+        protected $is_include = false;
+
         // -------------------------
         // CONFIGURATION
         // -------------------------
@@ -97,6 +99,7 @@ namespace {
          */
 
         public function draw(string $tpl_name, bool $is_include = false) {
+            $this->is_include = $is_include;
             try {
                 // compile the template if necessary and set the template filepath
                 $this->check_template($tpl_name);
@@ -297,7 +300,7 @@ namespace {
                     $compiled_code .= '<?php if(!isset(self::$clips["' . $name . '"])) self::$clips["' . $name . '"]=""; echo \'' . $code[0] . '\';?>';
                 } // exported_vars
                 elseif ($html === '$php.tpl.exported_vars') {
-                    $compiled_code .= '<?php echo json_encode($this->var);?>';
+                    $compiled_code .= $this->is_include ? $html : '<?php echo json_encode($this->var);?>';
                 } //all html code
                 else {
                     $compiled_code .= $html;
