@@ -16,12 +16,10 @@ abstract class Relation implements ICompilable {
 
     public $foreignTableField;
 
-    public function __construct($array = null) {
-        if (is_array($array)) {
-            foreach ($array as $key => $value) {
-                if (property_exists($this, $key)) {
-                    $this->$key = $value;
-                }
+    public function __construct($array = []) {
+        foreach ($array as $key => $value) {
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
             }
         }
     }
