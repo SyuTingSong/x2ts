@@ -498,9 +498,7 @@ class Model extends Component implements
             return $this->_properties[$name];
         } else if (array_key_exists($snakeName, $this->_properties)) {
             return $this->_properties[$snakeName];
-        } else if (array_key_exists($name, $this->relations)
-            && !$this->relations[$name] instanceof HasManyRelation
-        ) { // Use method to load HasManyRelation
+        } else if (array_key_exists($name, $this->relations)) {
             if (!array_key_exists($name, $this->_relationObjects)) {
                 $this->_relationObjects[$name] = $this->loadRelationObj($name);
             }
