@@ -107,35 +107,47 @@ abstract class Toolkit {
             '/$/'                      => 's',
         );
 
-        $uncountable = array(
+        $uncountableNouns = [
+            'air',
+            'anger',
+            'beauty',
             'equipment',
-            'information',
-            'rice',
-            'money',
-            'species',
-            'series',
+            'evidence',
             'fish',
+            'information',
+            'knowledge',
+            'love',
+            'money',
+            'research',
+            'rice',
+            'safety',
+            'series',
             'sheep',
-        );
+            'species',
+            'sugar',
+            'tea',
+            'water',
+        ];
 
-        $irregular = array(
-            'person' => 'people',
-            'man'    => 'men',
+        $irregular = [
             'child'  => 'children',
-            'sex'    => 'sexes',
-            'move'   => 'moves',
             'leaf'   => 'leaves',
-        );
+            'man'    => 'men',
+            'move'   => 'moves',
+            'person' => 'people',
+            'sex'    => 'sexes',
+        ];
 
-        foreach ($uncountable as $_uncountable) {
-            if (substr(strtolower($word), -strlen($_uncountable)) === $_uncountable) {
-                return $word;
+        $lowerWord = strtolower($word);
+        foreach ($uncountableNouns as $noun) {
+            if (substr($lowerWord, -strlen($noun)) === $noun) {
+                return $word . '_list';
             }
         }
 
         foreach ($irregular as $_singular => $_plural) {
             $length = strlen($_singular);
-            if (substr($word, -$length) === $_singular) {
+            if (substr($lowerWord, -$length) === $_singular) {
                 return substr($word, 0, -$length) . $_plural;
             }
         }
