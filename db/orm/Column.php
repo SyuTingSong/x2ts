@@ -7,25 +7,31 @@ use x2ts\TGetterSetter;
 
 /**
  * Class Column
+ *
  * @package x2ts\db\orm
  *
  * @property mixed $defaultValue
+ * @property string $phpType
  */
 class Column implements ICompilable {
     use TGetterSetter;
+
     public $name = '';
+
     public $type = 'int';
+
     protected $defaultValue = '';
+
     public $canBeNull = false;
+
     public $isPK = false;
+
     public $isUQ = false;
 
-    public function __construct($array = null) {
-        if (is_array($array)) {
-            foreach ($array as $key => $value) {
-                if (property_exists($this, $key)) {
-                    $this->$key = $value;
-                }
+    public function __construct(array $array = []) {
+        foreach ($array as $key => $value) {
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
             }
         }
     }
@@ -60,6 +66,7 @@ class Column implements ICompilable {
 
     /**
      * @param array $properties
+     *
      * @return \x2ts\ICompilable
      */
     public static function __set_state($properties) {
@@ -82,9 +89,10 @@ class Column implements ICompilable {
             case 'bigint':
             case 'smallint':
             case 'tinyint':
+                return 0;
             case 'float':
             case 'decimal':
-                return 0;
+                return 0.0;
             default:
                 return '';
         }
@@ -113,5 +121,19 @@ class Column implements ICompilable {
             default:
                 return $value;
         }
+    }
+
+    public function getPhpType() {
+        switch ($this->type) {
+            case 'int':
+            case 'bigint':
+            case 'smallint':
+            case 'tinyint':
+                return 'int';
+            case 'float':
+            case 'decimal':
+                return 'float';
+        }
+        return 'string';
     }
 }

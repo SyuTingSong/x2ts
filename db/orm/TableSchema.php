@@ -3,48 +3,55 @@
 namespace x2ts\db\orm;
 
 use x2ts\Component;
+use x2ts\ComponentFactory;
 use x2ts\db\IDataBase;
 use x2ts\db\MySQL;
-use x2ts\Toolkit;
-use x2ts\ComponentFactory;
 
 
 /**
  * Class Table
+ *
  * @package xts
- * @property-read array $columns
- * @property-read array $columnNames
- * @property-read array $keys
- * @property-read array $relations
+ * @property-read Column[]           $columns
+ * @property-read string[]           $columnNames
+ * @property-read array              $keys
+ * @property-read Relation[]         $relations
+ * @property-read string             $name
  * @property-read \x2ts\cache\ICache $cache
  */
 abstract class TableSchema extends Component {
     protected static $_conf = array(
-        'schemaCacheId' => 'cc',
-        'useSchemaCache' => false,
+        'schemaCacheId'       => 'cc',
+        'useSchemaCache'      => false,
         'schemaCacheDuration' => 0,
     );
 
     /**
      * @var boolean
      */
-    public $useCache=false;
+    public $useCache = false;
 
     /**
      * @var array
      */
     protected static $tables = array();
+
     /**
      * @var MySQL
      */
     protected $db;
+
     /**
      * @var string
      */
-    protected $name='';
+    protected $name = '';
+
+    public function getName() {
+        return $this->name;
+    }
 
     /**
-     * @return array
+     * @return Column[]
      */
     public function getColumns() {
         return static::$tables[$this->name]['columns'];
@@ -65,7 +72,7 @@ abstract class TableSchema extends Component {
     }
 
     /**
-     * @return array
+     * @return Relation[]
      */
     public function getRelations() {
         return static::$tables[$this->name]['relations'];
@@ -82,11 +89,11 @@ abstract class TableSchema extends Component {
     }
 
     public function init() {
-        if(!isset(static::$tables[$this->name])) {
-            if($this->conf['useSchemaCache']) {
+        if (!isset(static::$tables[$this->name])) {
+            if ($this->conf['useSchemaCache']) {
                 $key = $this->getHash();
                 $tableInfo = $this->cache->get($key);
-                if(!empty($tableInfo)) {
+                if (!empty($tableInfo)) {
                     static::$tables[$this->name] = $tableInfo;
                     return;
                 }
@@ -96,7 +103,7 @@ abstract class TableSchema extends Component {
     }
 
     /**
-     * @param string $name
+     * @param string    $name
      * @param IDataBase $db
      */
     public function __construct($name, IDataBase $db) {

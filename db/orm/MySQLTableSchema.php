@@ -60,7 +60,7 @@ class MySQLTableSchema extends TableSchema {
             $relation = new BelongToRelation();
             $relation->property = $rel['COLUMN_NAME'];
             $relation->foreignTableName = $rel['REFERENCED_TABLE_NAME'];
-            $relation->foreignModelName = $rel['REFERENCED_TABLE_NAME'];
+            $relation->foreignModelName = Toolkit::toCamelCase($rel['REFERENCED_TABLE_NAME'], true);
             $relation->foreignTableField = $rel['REFERENCED_COLUMN_NAME'];
             if (strrpos($relation->property, '_id')) {
                 $relation->name = substr($relation->property, 0, -3);
@@ -128,7 +128,7 @@ SQL
             $relation->relationTableFieldThat = $thatTableFK['COLUMN_NAME'];
             $relation->foreignTableName = $thatTableFK['REFERENCED_TABLE_NAME'];
             $relation->foreignTableField = $thatTableFK['REFERENCED_COLUMN_NAME'];
-            $relation->foreignModelName = $thatTableFK['REFERENCED_TABLE_NAME'];
+            $relation->foreignModelName = Toolkit::toCamelCase($thatTableFK['REFERENCED_TABLE_NAME'], true);
             $relations[$relation->name] = $relation;
         }
 
@@ -161,7 +161,7 @@ SQL
             }
             $relation->property = $rel['REFERENCED_COLUMN_NAME'];
             $relation->foreignTableName = $rel['TABLE_NAME'];
-            $relation->foreignModelName = $rel['TABLE_NAME'];
+            $relation->foreignModelName = Toolkit::toCamelCase($rel['TABLE_NAME'], true);
             $relation->foreignTableField = $rel['COLUMN_NAME'];
             $relation->name = ($relation instanceof HasManyRelation) ?
                 Toolkit::pluralize($rel['TABLE_NAME']) : $rel['TABLE_NAME'];
