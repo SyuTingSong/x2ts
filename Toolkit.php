@@ -86,6 +86,9 @@ abstract class Toolkit {
      * @return mixed|string
      */
     public static function pluralize($word) {
+        if ('' === $word || null === $word) {
+            return false;
+        }
         $plural = array(
             '/(quiz)$/i'               => '$1zes',
             '/^(ox)$/i'                => '$1en',
@@ -104,7 +107,6 @@ abstract class Toolkit {
             '/(octop|vir)us$/i'        => '$1i',
             '/(ax|test)is$/i'          => '$1es',
             '/s$/i'                    => 's',
-            '/$/'                      => 's',
         );
 
         $uncountableNouns = [
@@ -118,6 +120,7 @@ abstract class Toolkit {
             'knowledge',
             'love',
             'money',
+            'news',
             'research',
             'rice',
             'safety',
@@ -157,7 +160,7 @@ abstract class Toolkit {
                 return $r;
             }
         }
-        return false;
+        return $word . 's';
     }
 
     public static $logFile;

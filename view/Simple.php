@@ -103,7 +103,7 @@ namespace {
             try {
                 // compile the template if necessary and set the template filepath
                 $this->check_template($tpl_name);
-            } catch (RainTpl_Exception $e) {
+            } catch (AirTpl_Exception $e) {
                 echo $this->printDebug($e);
                 return;
             }
@@ -141,7 +141,7 @@ namespace {
          *
          * @param $tpl_name
          * @return bool return true if the template has changed
-         * @throws RainTpl_Exception
+         * @throws AirTpl_Exception
          */
         protected function check_template($tpl_name) {
             if (strpos($tpl_name, '/') === 0) {
@@ -152,17 +152,17 @@ namespace {
 
             // if the template doesn't exist throw an error
             if (!file_exists($this->tpl['tpl_filename']) || !is_readable($this->tpl['tpl_filename'])) {
-                $e = new RainTpl_NotFoundException('Template ' . $tpl_name . ' not exists or not readable!');
+                $e = new AirTpl_NotFoundException('Template ' . $tpl_name . ' not exists or not readable!');
                 throw $e->setTemplateFile($this->tpl['tpl_filename']);
             }
             // create directories
             if (!@mkdir(self::$compile_dir, 0755, true) && !is_dir(self::$compile_dir)) {
                 Toolkit::log(error_get_last(), X_LOG_ERROR);
-                throw new RainTpl_Exception('Cannot create compile dir');
+                throw new AirTpl_Exception('Cannot create compile dir');
             }
             // if the output dir is not writable throw an error
             if (!is_writable(self::$compile_dir)) {
-                throw new RainTpl_Exception ('ICache directory ' . self::$compile_dir . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+                throw new AirTpl_Exception ('ICache directory ' . self::$compile_dir . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
             }
 
             // compile the template if the compiled-file doesn't exist or the template is updated
@@ -186,7 +186,7 @@ namespace {
          * @access protected
          * @param string $tpl_filename template source
          * @param string $compiled_filename compiled template
-         * @throws RainTpl_Exception
+         * @throws AirTpl_Exception
          */
         protected function compileFile($tpl_filename, $compiled_filename) {
 
@@ -275,7 +275,7 @@ namespace {
                 } // clipdef
                 elseif (preg_match('/\{clipdef(?: name){0,1}="([\w\-]*)"\}/', $html, $code)) {
                     if (empty($code[1])) {
-                        $e = new RainTpl_SyntaxException('You must define the clip name for clipdef in ' . $this->tpl['tpl_filename'] . ' template');
+                        $e = new AirTpl_SyntaxException('You must define the clip name for clipdef in ' . $this->tpl['tpl_filename'] . ' template');
                         throw $e->setTemplateFile($this->tpl['tpl_filename']);
                     }
 
@@ -285,7 +285,7 @@ namespace {
                 elseif (strpos($html, '{/clipdef}') !== false) {
                     $name = array_pop($clip_stack);
                     if (empty($name)) {
-                        $e = new RainTpl_SyntaxException('clipdef closing tag count mismatch the open tag count in ' . $this->tpl['tpl_filename'] . ' template');
+                        $e = new AirTpl_SyntaxException('clipdef closing tag count mismatch the open tag count in ' . $this->tpl['tpl_filename'] . ' template');
                         throw $e->setTemplateFile($this->tpl['tpl_filename']);
                     }
 
@@ -294,7 +294,7 @@ namespace {
                 elseif (preg_match('/\{clip(?: name){0,1}="([\w\-]*)"\}/', $html, $code)) {
                     $name = $code[1];
                     if (empty($name)) {
-                        $e = new RainTpl_SyntaxException('You must provide clip name in ' . $this->tpl['tpl_filename'] . ' template');
+                        $e = new AirTpl_SyntaxException('You must provide clip name in ' . $this->tpl['tpl_filename'] . ' template');
                         throw $e->setTemplateFile($this->tpl['tpl_filename']);
                     }
                     $compiled_code .= '<?php if(!isset(self::$clips["' . $name . '"])) self::$clips["' . $name . '"]=""; echo \'' . $code[0] . '\';?>';
@@ -308,11 +308,11 @@ namespace {
             }
 
             if ($open_if > 0) {
-                $e = new RainTpl_SyntaxException('Error! You need to close an {if} tag in ' . $this->tpl['tpl_filename'] . ' template');
+                $e = new AirTpl_SyntaxException('Error! You need to close an {if} tag in ' . $this->tpl['tpl_filename'] . ' template');
                 throw $e->setTemplateFile($this->tpl['tpl_filename']);
             }
             if (0 !== count($clip_stack)) {
-                $e = new RainTpl_SyntaxException('clipdef closing tag count mismatch the open tag count in ' . $this->tpl['tpl_filename'] . ' template');
+                $e = new AirTpl_SyntaxException('clipdef closing tag count mismatch the open tag count in ' . $this->tpl['tpl_filename'] . ' template');
                 throw $e->setTemplateFile($this->tpl['tpl_filename']);
             }
             return $compiled_code;
@@ -440,7 +440,7 @@ namespace {
          * Check if function is in black list (sandbox)
          *
          * @param string $code
-         * @throws \RainTpl_SyntaxException
+         * @throws \AirTpl_SyntaxException
          * @internal param string $tag
          */
         protected function function_check($code) {
@@ -456,7 +456,7 @@ namespace {
                     ;
 
                 // stop the execution of the script
-                $e = new RainTpl_SyntaxException('Unallowed syntax in ' . $this->tpl['tpl_filename'] . ' template');
+                $e = new AirTpl_SyntaxException('Unallowed syntax in ' . $this->tpl['tpl_filename'] . ' template');
                 throw $e->setTemplateFile($this->tpl['tpl_filename'])
                     ->setTag($code)
                     ->setTemplateLine($line);
@@ -467,17 +467,17 @@ namespace {
         /**
          * Prints debug info about exception or passes it further if debug is disabled.
          *
-         * @param RainTpl_Exception $e
-         * @throws RainTpl_Exception
+         * @param AirTpl_Exception $e
+         * @throws AirTpl_Exception
          * @return string
          */
-        protected function printDebug(RainTpl_Exception $e) {
+        protected function printDebug(AirTpl_Exception $e) {
             $output = sprintf('<h2>Exception: %s</h2><h3>%s</h3><p>template: %s</p>',
                 get_class($e),
                 $e->getMessage(),
                 $e->getTemplateFile()
             );
-            if ($e instanceof RainTpl_SyntaxException) {
+            if ($e instanceof AirTpl_SyntaxException) {
                 if (null != $e->getTemplateLine()) {
                     $output .= '<p>line: ' . $e->getTemplateLine() . '</p>';
                 }
@@ -530,7 +530,7 @@ namespace {
     /**
      * Basic Rain tpl exception.
      */
-    class RainTpl_Exception extends Exception {
+    class AirTpl_Exception extends Exception {
         /**
          * Path of template file with error.
          */
@@ -560,13 +560,13 @@ namespace {
     /**
      * Exception thrown when template file does not exists.
      */
-    class RainTpl_NotFoundException extends RainTpl_Exception {
+    class AirTpl_NotFoundException extends AirTpl_Exception {
     }
 
     /**
      * Exception thrown when syntax error occurs.
      */
-    class RainTpl_SyntaxException extends RainTpl_Exception {
+    class AirTpl_SyntaxException extends AirTpl_Exception {
         /**
          * Line in template file where error has occured.
          *

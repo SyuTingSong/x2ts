@@ -15,7 +15,7 @@ use x2ts\ExtensionNotLoadedException;
 use x2ts\IComponent;
 use x2ts\Toolkit;
 
-if (!extension_loaded('phpredis')) {
+if (!extension_loaded('redis')) {
     throw new ExtensionNotLoadedException('The x2ts\db\Redis required extension phpredis has not been loaded yet');
 }
 
