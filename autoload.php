@@ -12,7 +12,7 @@ define('X_LOG_NOTICE', 1);
 define('X_LOG_WARNING', 2);
 define('X_LOG_ERROR', 3);
 defined('X_LOG_LEVEL') or define('X_LOG_LEVEL', X_DEBUG ? X_LOG_DEBUG : X_LOG_NOTICE);
-define('X_RUNTIME_ROOT', X_LIB_ROOT . DIRECTORY_SEPARATOR . 'runtime');
+defined('X_RUNTIME_ROOT') or define('X_RUNTIME_ROOT', X_LIB_ROOT . DIRECTORY_SEPARATOR . 'runtime');
 
 $__x2ts_autoload_not_exist_classes = [];
 spl_autoload_register(function ($className) {
