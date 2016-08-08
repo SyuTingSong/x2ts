@@ -102,10 +102,10 @@ FROM
       ) mmrt USING (`TABLE_NAME`)
     WHERE `REFERENCED_TABLE_NAME` = :n
   ) rt USING (`TABLE_NAME`)
-WHERE `REFERENCED_TABLE_NAME` IS NOT NULL;
+WHERE `TABLE_SCHEMA`=:sk AND `REFERENCED_TABLE_NAME` IS NOT NULL;
 SQL
             ,
-            [':s' => $db->dbName, ':n' => $this->name]
+            [':s' => $db->dbName, ':n' => $this->name, ':sk' => $db->dbName]
         );
         $relationTableFKs = [];
         foreach ($rels as $rel) {
