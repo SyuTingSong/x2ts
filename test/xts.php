@@ -12,4 +12,4 @@ require_once dirname(__DIR__) . '/autoload.php';
  * @method static \lang\Zh intl(string $lang = null)
  * @method static \x2ts\db\MySQL db()
  */
-class X extends x2ts\ComponentFactory {}
+class XTS extends x2ts\ComponentFactory {}
