@@ -28,7 +28,7 @@ class HasOneRelation extends Relation {
         $offset = null,
         $limit = null
     ) {
-        Toolkit::trace('HasOneRelation fetch');
+        Toolkit::trace("Relation load {$this->name}");
         $condition = $this->foreignTableField . '=:_fk' .
             ((null === $condition || '' === $condition) ?
                 '' : " AND $condition");

@@ -34,6 +34,7 @@ class ManyManyRelation extends Relation {
         $offset = null,
         $limit = null
     ) {
+        Toolkit::trace("Relation load {$this->name}");
         $condition = "`{$this->relationTableName}`.`{$this->relationTableFieldThis}`=:_fk" .
             (null === $condition || '' === $condition ?
                 '' : " AND $condition");
