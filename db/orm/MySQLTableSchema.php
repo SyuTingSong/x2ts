@@ -165,7 +165,12 @@ SQL
             $relation->foreignTableField = $rel['COLUMN_NAME'];
             $relation->name = ($relation instanceof HasManyRelation) ?
                 Toolkit::pluralize($rel['TABLE_NAME']) : $rel['TABLE_NAME'];
-            $relations[$relation->name] = $relation;
+            if (array_key_exists($relation->name, $relations)) {
+                $relations[$relation->name . ($relation instanceof HasOneRelation ? '_one' : '_many')]
+                    = $relation;
+            } else {
+                $relations[$relation->name] = $relation;
+            }
         }
         static::$tables[$this->name] = array(
             'columns'   => $columns,
