@@ -28,6 +28,8 @@ class Column implements ICompilable {
 
     public $isUQ = false;
 
+    public $position = 0;
+
     public function __construct(array $array = []) {
         foreach ($array as $key => $value) {
             if (property_exists($this, $key)) {

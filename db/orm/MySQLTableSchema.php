@@ -38,6 +38,7 @@ class MySQLTableSchema extends TableSchema {
             $column->type = $col['DATA_TYPE'];
             $column->canBeNull = $col['IS_NULLABLE'] === 'YES';
             $column->defaultValue = $col['COLUMN_DEFAULT'];
+            $column->position = $col['ORDINAL_POSITION'];
             if ($col['COLUMN_KEY'] === 'PRI') {
                 $column->isPK = true;
                 $keys['PK'] = $col['COLUMN_NAME'];
