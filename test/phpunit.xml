@@ -21,15 +21,22 @@
          timeoutForSmallTests="1"
          timeoutForMediumTests="10"
          timeoutForLargeTests="60"
-         verbose="false">
+         verbose="true"
+         bootstrap="xts.php">
     <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">../</directory>
-            <!--<file>../Toolkit.php</file>-->
+        <whitelist processUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">../validator</directory>
+            <file>../Toolkit.php</file>
             <exclude>
                 <directory suffix=".php">./</directory>
                 <!--<file>/path/to/file</file>-->
             </exclude>
         </whitelist>
     </filter>
+    <testsuites>
+        <testsuite name="x2ts">
+            <file>ValidatorTest.php</file>
+            <file>ToolkitTest.php</file>
+        </testsuite>
+    </testsuites>
 </phpunit>

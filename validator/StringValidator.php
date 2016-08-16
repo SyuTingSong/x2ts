@@ -156,13 +156,15 @@ class StringValidator extends Validator {
      * The wrapped var MUST in the specified enum.
      *
      * @param array $enum
+     * @param bool  $strict
+     *
      * @return $this
      */
-    public function inEnum($enum) {
+    public function inEnum($enum, $strict = true) {
         if (!$this->_isValid) {
             return $this;
         }
-        if (!in_array($this->_unsafeVar, $enum)) {
+        if (!in_array($this->_unsafeVar, $enum, $strict)) {
             $this->_isValid = false;
         }
         return $this;

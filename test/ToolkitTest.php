@@ -1,6 +1,9 @@
 <?php
-
+namespace x2ts\test;
 require_once __DIR__ . '/xts.php';
+use Exception;
+use stdClass;
+use Throwable;
 use x2ts\Toolkit;
 
 /**
@@ -163,7 +166,7 @@ class ToolkitTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @expectedException x2ts\UncompilableException
+     * @expectedException \x2ts\UncompilableException
      */
     public function testUnCompilableResource() {
         $f = fopen("/dev/null", "w");
@@ -171,7 +174,7 @@ class ToolkitTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @expectedException x2ts\UncompilableException
+     * @expectedException \x2ts\UncompilableException
      */
     public function testUnCompilableObject() {
         $o = new stdClass();
@@ -216,7 +219,7 @@ class ToolkitTest extends \PHPUnit_Framework_TestCase {
         Toolkit::trace('hey');
         $logFile = X_RUNTIME_ROOT . '/app.log';
         system("tail -n 1 $logFile");
-        $this->expectOutputRegex('/\[debug\]\[ToolkitTest::testTrace\]hey/');
+        $this->expectOutputRegex('/\[debug\]\[x2ts\\\\test\\\\ToolkitTest::testTrace\]hey/');
     }
 
     /**
@@ -254,7 +257,7 @@ class ToolkitTest extends \PHPUnit_Framework_TestCase {
             return "welcome";
         });
         system('tail -n 1 ' . $this->logFile());
-        $this->expectOutputRegex('/\[debug\]\[ToolkitTest::testCallableLog\]welcome/');
+        $this->expectOutputRegex('/\[debug\]\[x2ts\\\\test\\\\ToolkitTest::testCallableLog\]welcome/');
     }
 
     public function testArrayLog() {
@@ -266,7 +269,7 @@ class ToolkitTest extends \PHPUnit_Framework_TestCase {
         Toolkit::log($arr);
         $lineCount = substr_count($r, "\n") + 1;
         system("tail -n $lineCount " . $this->logFile());
-        $this->expectOutputRegex('/\[debug\]\[ToolkitTest::testArrayLog\]/');
+        $this->expectOutputRegex('/\[debug\]\[x2ts\\\\test\\\\ToolkitTest::testArrayLog\]/');
     }
 
     public function testThrowableLog() {
@@ -277,7 +280,7 @@ class ToolkitTest extends \PHPUnit_Framework_TestCase {
             $s = "\n\n" . $t->getTraceAsString();
             $lineCount = substr_count($s, "\n") + 1;
             system("tail -n $lineCount " . $this->logFile());
-            $this->expectOutputRegex('/\[error\]\[ToolkitTest::testThrowableLog\].*Some say good while some say bad/');
+            $this->expectOutputRegex('/\[error\]\[x2ts\\\\test\\\\ToolkitTest::testThrowableLog\].*Some say good while some say bad/');
         }
     }
 }
