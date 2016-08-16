@@ -277,8 +277,9 @@ class Validator extends Component {
         return $this->_safeVar;
     }
 
-    private function isEmptyString($var) {
-        return null === $var || '' === $var;
+    private function isEmpty($var) {
+        return null === $var || '' === $var ||
+        (is_array($var) && 0 === count($var));
     }
 
     /**
@@ -287,7 +288,7 @@ class Validator extends Component {
      * @return void
      */
     protected function selfValidate() {
-        if ($this->isEmptyString($this->_unsafeVar)) {
+        if ($this->isEmpty($this->_unsafeVar)) {
             if ($this->onEmptySet) {
                 $this->_safeVar = $this->onEmptySetValue;
                 $this->_isValid = true;
@@ -301,7 +302,7 @@ class Validator extends Component {
             }
         }
 
-        if (!$this->_isValid && $this->isEmptyString($this->message)) {
+        if (!$this->_isValid && $this->isEmpty($this->message)) {
             if ($this->onErrorSet) {
                 $this->_safeVar = $this->onErrorSetValue;
                 $this->_isValid = true;
