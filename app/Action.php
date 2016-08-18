@@ -342,6 +342,11 @@ abstract class Action {
         return $this;
     }
 
+    public function assign(...$args) {
+        ComponentFactory::view()->assign(...$args);
+        return $this;
+    }
+
     /**
      * Render a template and returns html
      *

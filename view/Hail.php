@@ -50,7 +50,7 @@ namespace {
          *
          * @var string
          */
-        static $tpl_dir = "tpl";
+        protected static $tpl_dir = "tpl";
 
 
         /**
@@ -58,14 +58,14 @@ namespace {
          *
          * @var string
          */
-        static $compile_dir = "tmp";
+        protected static $compile_dir = "tmp";
 
         /**
          * Template extension.
          *
          * @var string
          */
-        static $tpl_ext = "hail";
+        protected static $tpl_ext = "hail";
 
         /**
          * Enable or disable clip support.
@@ -76,7 +76,7 @@ namespace {
          *
          * @var bool
          */
-        static $enable_clip = false;
+        protected static $enable_clip = false;
 
 
         /**
@@ -84,7 +84,7 @@ namespace {
          *
          * @var array
          */
-        static $black_list = array('\$this', 'raintpl::', 'self::', '_SESSION', '_SERVER', '_ENV', 'eval', 'exec', 'unlink', 'rmdir');
+        protected static $black_list = array('\$this', 'raintpl::', 'self::', '_SESSION', '_SERVER', '_ENV', 'eval', 'exec', 'unlink', 'rmdir');
 
 
         /**
@@ -92,7 +92,7 @@ namespace {
          *
          * @var array
          */
-        static $clips = array();
+        protected static $clips = array();
 
         /**
          * Is the array where RainTPL keep the variables assigned
@@ -120,11 +120,13 @@ namespace {
          * @return $this
          */
 
-        function assign($variable, $value) {
-            if (is_array($variable))
-                $this->var = array_merge($this->var, $variable);
-            else
-                $this->var[$variable] = $value;
+        public function assign() {
+            $argv = func_get_args();
+            if (is_array($argv[0])) {
+                $this->var = array_merge($this->var, $argv[0]);
+            } else {
+                $this->var[$argv[0]] = $argv[1];
+            }
             return $this;
         }
 
@@ -132,7 +134,7 @@ namespace {
          * @param array $var
          * @return $this
          */
-        function assignRefresh($var) {
+        public function assignRefresh($var) {
             if (is_array($var)) {
                 $this->var = $var;
             }
@@ -148,7 +150,7 @@ namespace {
          * @param bool $is_include
          */
 
-        function draw($tpl_name, $is_include = false) {
+        public function draw($tpl_name, $is_include = false) {
             try {
                 // compile the template if necessary and set the template filepath
                 $this->check_template($tpl_name);
@@ -515,14 +517,14 @@ namespace {
         }
 
         // replace const
-        function const_replace($html, $tag_left_delimiter, $tag_right_delimiter, $php_left_delimiter = null, $php_right_delimiter = null, $loop_level = null, $echo = null) {
+        protected function const_replace($html, $tag_left_delimiter, $tag_right_delimiter, $php_left_delimiter = null, $php_right_delimiter = null, $loop_level = null, $echo = null) {
             // const
             return preg_replace('/\{\#(\w+)\#{0,1}\}/', $php_left_delimiter . ($echo ? " echo " : null) . '\\1' . $php_right_delimiter, $html);
         }
 
 
         // replace functions/modifiers on constants and strings
-        function func_replace($html, $tag_left_delimiter, $tag_right_delimiter, $php_left_delimiter = null, $php_right_delimiter = null, $loop_level = null, $echo = null) {
+        protected function func_replace($html, $tag_left_delimiter, $tag_right_delimiter, $php_left_delimiter = null, $php_right_delimiter = null, $loop_level = null, $echo = null) {
 
             preg_match_all('/' . '\{\#{0,1}(\"{0,1}.*?\"{0,1})(\|\w.*?)\#{0,1}\}' . '/', $html, $matches);
 
@@ -617,7 +619,7 @@ namespace {
         }
 
 
-        function var_replace($html, $tag_left_delimiter, $tag_right_delimiter, $php_left_delimiter = null, $php_right_delimiter = null, $loop_level = null, $echo = null) {
+        protected function var_replace($html, $tag_left_delimiter, $tag_right_delimiter, $php_left_delimiter = null, $php_right_delimiter = null, $loop_level = null, $echo = null) {
 
             //all variables
             if (preg_match_all('/' . $tag_left_delimiter . '\$(\w+(?:\.\${0,1}[A-Za-z0-9_]+)*(?:(?:\[\${0,1}[A-Za-z0-9_]+\])|(?:\-\>\${0,1}[A-Za-z0-9_]+))*)(.*?)' . $tag_right_delimiter . '/', $html, $matches)) {
