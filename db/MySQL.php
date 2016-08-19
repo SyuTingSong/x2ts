@@ -64,14 +64,15 @@ class MySQL extends Component implements IDataBase {
 
     protected $_dbName = null;
 
+    public function __construct() {
+        $this->_dbName = static::$_conf['dbname'];
+        parent::__construct();
+    }
+
     /**
-     * @return null|string
+     * @return string
      */
     public function getDbName() {
-        if (empty($this->_dbName)) {
-            $r = $this->query('SELECT DATABASE() AS dbname');
-            $this->_dbName = $r[0]['dbname'];
-        }
         return $this->_dbName;
     }
 
