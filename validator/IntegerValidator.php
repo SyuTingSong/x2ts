@@ -17,15 +17,12 @@ class IntegerValidator extends NumberValidator {
         } else {
             $this->shell = $this;
         }
-
-        if (ctype_digit($var)) {
+        if (is_int($var)) {
+            $this->_unsafeVar = $var;
+        } else if (ctype_digit($var)) {
             $this->_unsafeVar = (int) $var;
         } else if (@$var[0] === '-' && ctype_digit(substr($var, 1))) {
             $this->_unsafeVar = (int) $var;
-        } else if (ctype_xdigit($var)) {
-            $this->_unsafeVar = intval($var, 16);
-        } else if (is_int($var)) {
-            $this->_unsafeVar = $var;
         } else if (strpos($var, '0x') === 0 && ctype_xdigit($var = substr($var, 2))) {
             $this->_unsafeVar = intval($var, 16);
         } else {

@@ -8,6 +8,9 @@
 
 namespace x2ts\test;
 
+use x2ts\validator\DecimalValidator;
+use x2ts\validator\HexadecimalValidator;
+use x2ts\validator\IntegerValidator;
 use x2ts\validator\StringValidator;
 use x2ts\validator\ValidatorException;
 
@@ -387,6 +390,7 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase {
      * @param string $str
      * @param array  $enum
      * @param bool   $strict
+     *
      * @dataProvider dataForStringInEnum
      */
     public function testStringInEnum(bool $isValid, string $str, array $enum, bool $strict) {
@@ -443,5 +447,128 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase {
             static::assertEquals('errorMobile', $messages['mobile']);
             static::assertEquals('string is invalid', $messages['string']);
         }
+    }
+
+    /**
+     * @param        $report
+     * @param        $input
+     * @param string $expect
+     *
+     * @dataProvider dataForInt
+     */
+    public function testInt($report, $input, $expect = null) {
+        try {
+            $var = (new IntegerValidator($input))
+                ->onEmptyReport('empty')
+                ->onErrorReport('error')
+                ->validate()
+                ->safeVar;
+            static::assertFalse($report);
+            static::assertSame($expect, $var);
+        } catch (ValidatorException $ex) {
+            static::assertEquals($report, $ex->getMessage());
+        }
+    }
+
+    public function dataForInt() {
+        return [
+            [false, '123', 123],
+            [false, 123, 123],
+            [false, -123, -123],
+            [false, 0xff, 255],
+            [false, '-123', -123],
+            [false, '0xff', 255],
+            [false, '0xFF', 255],
+            [false, '0', 0],
+            [false, '0x0', 0],
+            [false, '-0', 0],
+            ['error', '0.0'],
+            ['error', 'def'],
+            ['error', '0xhh'],
+            ['empty', ''],
+            ['empty', null],
+        ];
+    }
+
+    /**
+     * @param      $report
+     * @param      $input
+     * @param null $expect
+     *
+     * @dataProvider dataForDec
+     */
+    public function testDec($report, $input, $expect = null) {
+        try {
+            $var = (new DecimalValidator($input))
+                ->onEmptyReport('empty')
+                ->onErrorReport('error')
+                ->validate()
+                ->safeVar;
+            static::assertFalse($report, "The input: $input");
+            static::assertSame($expect, $var, "The input: $input");
+        } catch (ValidatorException $ex) {
+            static::assertEquals($report, $ex->getMessage(), "The input: $input");
+        }
+    }
+
+    public function dataForDec() {
+        return [
+            [false, 123, 123],
+            [false, '123', 123],
+            [false, -123, -123],
+            [false, '-123', -123],
+            [false, 0x12, 0x12],
+            [false, 0, 0],
+            [false, '0', 0],
+            [false, '-0', 0],
+            ['empty', ''],
+            ['empty', null],
+            ['error', 'abc'],
+            ['error', '0x12'],
+            ['error', '123abc'],
+            ['error', '123great'],
+            ['error', '0xhh'],
+        ];
+    }
+
+    /**
+     * @param      $report
+     * @param      $input
+     * @param null $expect
+     *
+     * @dataProvider dataForHex
+     */
+    public function testHex($report, $input, $expect = null) {
+        try {
+            $var = (new HexadecimalValidator($input))
+                ->onEmptyReport('empty')
+                ->onErrorReport('error')
+                ->validate()
+                ->safeVar;
+            static::assertFalse($report);
+            static::assertSame($expect, $var);
+        } catch (ValidatorException $ex) {
+            static::assertEquals($report, $ex->getMessage());
+        }
+    }
+
+    public function dataForHex() {
+        return [
+            [false, 123, 123],
+            [false, '123', 0x123],
+            [false, -123, -123],
+            [false, '-123', -0x123],
+            [false, 0x12, 0x12],
+            [false, 0, 0],
+            [false, '0', 0],
+            [false, '-0', 0],
+            [false, 'abc', 0xabc],
+            ['empty', ''],
+            ['empty', null],
+            [false, '123abc', 0x123abc],
+            ['error', '123great'],
+            ['error', '0xhh'],
+            ['error', '-0x123'],
+        ];
     }
 }

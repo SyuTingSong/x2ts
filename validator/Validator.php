@@ -191,6 +191,26 @@ class Validator extends Component {
     }
 
     /**
+     * @param $key
+     *
+     * @return DecimalValidator
+     */
+    public function dec($key) {
+        return $this->shell->subValidators[$key] =
+            new DecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return HexadecimalValidator
+     */
+    public function hex($key) {
+        return $this->shell->subValidators[$key] =
+            new HexadecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+    }
+
+    /**
      * @param string $key
      *
      * @return BooleanValidator
