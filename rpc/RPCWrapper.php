@@ -9,12 +9,14 @@
 namespace x2ts\rpc;
 
 
+use ReflectionObject;
 use x2ts\Component;
 use x2ts\ComponentFactory;
 use x2ts\Toolkit;
 
 /**
  * Class RPCWrapper
+ *
  * @package x2ts\rpc
  */
 abstract class RPCWrapper extends Component {
@@ -22,8 +24,9 @@ abstract class RPCWrapper extends Component {
 
     public function __call($name, $arguments) {
         if ($this->package === null) {
-            $class = get_class($this);
-            $this->package = Toolkit::to_snake_case(ltrim(substr($class, strrpos($class, '\\')), '\\'));
+            $this->package = Toolkit::to_snake_case(
+                (new ReflectionObject($this))->getShortName()
+            );
         }
         Toolkit::trace("Package: {$this->package}");
         return ComponentFactory::rpc($this->package)->call($name, ...$arguments);
