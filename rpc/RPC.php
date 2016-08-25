@@ -148,10 +148,12 @@ class RPC extends Component {
      */
     public function register($name, callable $method = null):RPC {
         if (is_string($name)) {
+            Toolkit::log("register $name to package {$this->package}", X_LOG_NOTICE);
             $this->callbacks[$name] = $method ?? $name;
         } else if ($name instanceof IRemoteCallable) {
             $obj = $name;
             foreach ($obj->getRPCMethods() as $methodName) {
+                Toolkit::log("register $methodName to package {$this->package}", X_LOG_NOTICE);
                 $this->callbacks[$methodName] = [$obj, $methodName];
             }
         }
@@ -241,7 +243,7 @@ class RPC extends Component {
         finish:
         $q->ack($msg->getDeliveryTag());
         if ($this->conf['maxRequest']) {
-            if (++$this->requestCounter > $this->conf['maxRequest']) {
+            if (++$this->requestCounter >= $this->conf['maxRequest']) {
                 Toolkit::log(
                     'Max request limit exceed. Exit the rpc loop',
                     X_LOG_NOTICE

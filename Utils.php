@@ -36,10 +36,25 @@ class Utils extends Component {
         return (bool) $r;
     }
 
-    public function is_lan_ip(string $ipv4):bool {
+    public function is_lan_ip(string $ipv4, bool $loopBack = false, bool $linkLocal = false):bool {
         $long = ip2long($ipv4);
-        return $long & 0xff000000 === 0xa0000000 // 10.0.0.0/8
-            || $long & 0xfff00000 === 0xac100000 // 172.16.0.0/12
-            || $long & 0xffff0000 === 0xc0a80000;// 192.168.0.0/16
+        return
+            $long & 0xff000000 === 0xa0000000 || // 10.0.0.0/8
+            $long & 0xfff00000 === 0xac100000 || // 172.16.0.0/12
+            $long & 0xffff0000 === 0xc0a80000 || // 192.168.0.0/16
+            $loopBack &&
+            $long & 0xff000000 === 0x7f000000 || // 127.0.0.0/8
+            $linkLocal &&
+            $long & 0xffff0000 === 0xa9fe0000;   // 169.254.0.0/16
+    }
+
+    public function random_chars(int $length):string {
+        return substr(
+            str_replace(['+', '/', '='], '', base64_encode(
+                random_bytes($length << 1)
+            )),
+            0,
+            $length
+        );
     }
 }

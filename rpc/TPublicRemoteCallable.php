@@ -9,15 +9,13 @@ namespace x2ts\rpc;
 
 
 use ReflectionObject;
-use x2ts\Toolkit;
 
 trait TPublicRemoteCallable {
     public function getRPCMethods() {
-        Toolkit::log(__METHOD__, X_LOG_NOTICE);
         $rf = new ReflectionObject($this);
         $publicMethods = $rf->getMethods(\ReflectionMethod::IS_PUBLIC);
         foreach ($publicMethods as $method) {
-            if ($method->name !== __METHOD__) {
+            if ($method->name !== __FUNCTION__) {
                 yield $method->name;
             }
         }
