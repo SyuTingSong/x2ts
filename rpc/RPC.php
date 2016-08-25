@@ -29,6 +29,7 @@ if (!extension_loaded('msgpack')) {
 
 /**
  * Class RPC
+ *
  * @package x2ts\rpc
  *
  * @property-read AMQPChannel $serverChannel
@@ -49,10 +50,15 @@ class RPC extends Component {
         'persistent' => false,
         'maxRequest' => 500,
     ];
+
     private $_serverChannel;
+
     private $_clientChannel;
+
     private $_serverExchange;
+
     private $package;
+
     private $callbacks;
 
     public function __construct(string $package = 'common') {
@@ -124,7 +130,7 @@ class RPC extends Component {
         return (new Request($this->clientChannel, $this->package, $name, $args))->send()->getResponse();
     }
 
-    public function callVoid(string $name, ...$args):void {
+    public function callVoid(string $name, ...$args) {
         $this->checkPackage();
         (new Request($this->clientChannel, $this->package, $name, $args))->send();
     }
@@ -134,11 +140,20 @@ class RPC extends Component {
         return (new Request($this->clientChannel, $this->package, $name, $args))->send();
     }
 
-    public function register(string $name, callable $method = null):RPC {
-        if ($method === null) {
-            $this->callbacks[$name] = $name;
-        } else {
-            $this->callbacks[$name] = $method;
+    /**
+     * @param string|IRemoteCallable $name
+     * @param callable|null          $method
+     *
+     * @return RPC
+     */
+    public function register($name, callable $method = null):RPC {
+        if (is_string($name)) {
+            $this->callbacks[$name] = $method ?? $name;
+        } else if ($name instanceof IRemoteCallable) {
+            $obj = $name;
+            foreach ($obj->getRPCMethods() as $methodName) {
+                $this->callbacks[$methodName] = [$obj, $methodName];
+            }
         }
         return $this;
     }
@@ -147,7 +162,8 @@ class RPC extends Component {
 
     /**
      * @param AMQPEnvelope $msg
-     * @param AMQPQueue $q
+     * @param AMQPQueue    $q
+     *
      * @return bool
      * @throws \AMQPChannelException
      * @throws \AMQPConnectionException
@@ -274,7 +290,7 @@ class RPC extends Component {
                 /**
                  * @var AMQPExchange $e
                  * @var AMQPEnvelope $m
-                 * @var AMQPQueue $q
+                 * @var AMQPQueue    $q
                  */
                 list ($e, $m, $q) = $GLOBALS['_rpc_server_shutdown'];
                 if ($e instanceof AMQPExchange) {
