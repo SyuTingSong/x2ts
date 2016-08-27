@@ -17,15 +17,15 @@ trait TEventDispatcher {
             'state' => $state,
         );
     }
-    public function dispatch($event) {
-        $args = func_get_args();
-        array_shift($args);
+    public function dispatch($event, ...$args) {
         $i = 0;
         if (isset($this->_events[$event])) {
             foreach ($this->_events[$event] as $listener) {
                 if (is_callable($listener['callback'])) {
                     $p = $args;
-                    array_unshift($p, $listener['state']);
+                    if (null !== $listener['state']) {
+                        array_unshift($p, $listener['state']);
+                    }
                     $r = call_user_func_array($listener['callback'], $p);
                     if ($r === false) {
                         return false;

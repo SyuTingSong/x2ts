@@ -88,7 +88,9 @@ abstract class Action {
         );
         $this->dispatch('PreAction', $this);
         try {
+            $this->dispatch('PreRun', $this);
             $this->_run($pArgs);
+            $this->dispatch('PostRun', $this);
         } catch (ApplicationExitException $e) {
             if ($m = $e->getMessage()) {
                 Toolkit::trace("App end with message " . $e->getMessage() . "\n" . $e->getTraceAsString());
@@ -107,6 +109,16 @@ abstract class Action {
 
     public function onPreAction(callable $callback, $state = null) {
         $this->on('PreAction', $callback, $state);
+        return $this;
+    }
+
+    public function onPreRun(callable $callback, $state = null) {
+        $this->on('PreRun', $callback, $state);
+        return $this;
+    }
+
+    public function onPostRun(callable $callback, $state = null) {
+        $this->on('PostRun', $callback, $state);
         return $this;
     }
 
@@ -240,7 +252,7 @@ abstract class Action {
         $num = func_num_args();
         $args = func_get_args();
         for ($i = 0; $i < $num; $i++) {
-            $this->response->appendBody(strval($args[$i]));
+            $this->response->appendBody((string) $args[$i]);
         }
         return $this;
     }
@@ -253,6 +265,7 @@ abstract class Action {
 
     public function dump($var) {
         ob_start();
+        /** @noinspection ForgottenDebugOutputInspection */
         var_dump($var);
         $this->out('<pre>' . ob_get_contents());
         ob_end_clean();
@@ -296,7 +309,7 @@ abstract class Action {
     private function jsonOutput($code, $msg, $data, $goto) {
         $res = array('code' => $code);
         if (isset($msg))
-            $res['message'] = strval($msg);
+            $res['message'] = (string) $msg;
         if (isset($data))
             $res['data'] = $data;
         if (!empty($goto))
