@@ -48,7 +48,7 @@ class CCache extends Component implements ICache {
      * @return void
      */
     public function set($key, $value, $duration) {
-        Toolkit::trace("CCache set $key");
+        Toolkit::trace("CCache set $key expire in $duration");
         $file = $this->key2file($key);
         $content = array(
             'key' => $key,

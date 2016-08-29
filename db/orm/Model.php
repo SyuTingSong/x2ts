@@ -239,7 +239,7 @@ class Model extends Component implements
         }
         $r = $this->_builder->limit(1)
             ->query();
-        if (!is_array($r) or 0 === count($r)) {
+        if (!is_array($r) || 0 === count($r)) {
             return null;
         }
         $one = $clone ? clone $this : $this;
