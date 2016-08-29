@@ -132,7 +132,7 @@ class RPC extends Component {
 
     public function callVoid(string $name, ...$args) {
         $this->checkPackage();
-        (new Request($this->clientChannel, $this->package, $name, $args))->send();
+        (new Request($this->clientChannel, $this->package, $name, $args, true))->send();
     }
 
     public function asyncCall(string $name, ...$args):Response {

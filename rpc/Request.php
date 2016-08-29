@@ -30,7 +30,7 @@ class Request {
         $this->id = uniqid('', false);
     }
 
-    public function send():Response {
+    public function send() {
         $ex = new AMQPExchange($this->channel);
         $payload = msgpack_pack(
             [

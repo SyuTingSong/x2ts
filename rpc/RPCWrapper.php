@@ -22,12 +22,16 @@ use x2ts\Toolkit;
 abstract class RPCWrapper extends Component {
     protected $package = null;
 
-    public function __call($name, $arguments) {
+    public function __construct() {
+        parent::__construct();
         if ($this->package === null) {
             $this->package = Toolkit::to_snake_case(
                 (new ReflectionObject($this))->getShortName()
             );
         }
+    }
+
+    public function __call($name, $arguments) {
         Toolkit::trace("Package: {$this->package}");
         return ComponentFactory::rpc($this->package)->call($name, ...$arguments);
     }
