@@ -180,7 +180,7 @@ class MySQL extends Component implements IDataBase {
     private function initPdo() {
         $conf = $this->conf;
         $this->_pdo = new PDO (
-            "mysql:host={$conf['host']};port={$conf['port']};dbname={$conf['dbname']};charset={$conf['charset']};",
+            "mysql:host={$conf['host']};port={$conf['port']};dbname={$this->_dbName};charset={$conf['charset']};",
             $conf['user'],
             $conf['password'],
             array(
