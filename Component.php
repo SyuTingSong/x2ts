@@ -4,6 +4,7 @@ namespace x2ts;
 
 /**
  * Class Component
+ *
  * @package x2ts
  * @property-read array $conf
  */
@@ -15,15 +16,21 @@ abstract class Component implements IComponent {
      * @var array
      */
     protected static $_conf;
+
     protected static $_confObject;
 
     /**
      * @param array|null $conf
-     * @return \stdClass|null
+     *
+     * @return \stdClass|array|null
      */
     public static function conf($conf = null) {
-        if (!is_null($conf) && is_array($conf)) {
-            Toolkit::override(static::$_conf, $conf);
+        if (null !== $conf) {
+            if (is_array($conf)) {
+                Toolkit::override(static::$_conf, $conf);
+            } else if (is_string($conf)) {
+                return static::$_conf[$conf];
+            }
         } else {
             if (empty(static::$_confObject))
                 static::$_confObject = json_decode(json_encode(static::$_conf));
