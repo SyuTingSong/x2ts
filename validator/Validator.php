@@ -41,6 +41,11 @@ class Validator extends Component {
     protected $_isEmpty = false;
 
     /**
+     * @var bool
+     */
+    protected $_isUndefined = false;
+
+    /**
      * the wrapped var
      *
      * @var mixed
@@ -73,6 +78,16 @@ class Validator extends Component {
      * @var mixed
      */
     protected $onEmptySetValue = null;
+
+    /**
+     * @var bool
+     */
+    protected $onEmptyIgnore = false;
+
+    /**
+     * @var bool
+     */
+    protected $onUndefinedIgnore = false;
 
     /**
      * $shell always ref to the most outside Valley
@@ -126,8 +141,10 @@ class Validator extends Component {
      * @return StringValidator
      */
     public function str($key) {
-        return $this->shell->subValidators[$key] =
-            new StringValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new StringValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -136,8 +153,10 @@ class Validator extends Component {
      * @return DateValidator
      */
     public function date($key) {
-        return $this->shell->subValidators[$key] =
-            new DateValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new DateValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -146,8 +165,10 @@ class Validator extends Component {
      * @return EmailValidator
      */
     public function email($key) {
-        return $this->shell->subValidators[$key] =
-            new EmailValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new EmailValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -156,8 +177,10 @@ class Validator extends Component {
      * @return UrlValidator
      */
     public function url($key) {
-        return $this->shell->subValidators[$key] =
-            new UrlValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new UrlValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -166,8 +189,10 @@ class Validator extends Component {
      * @return TelValidator
      */
     public function tel($key) {
-        return $this->shell->subValidators[$key]
-            = new TelValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new TelValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -176,8 +201,10 @@ class Validator extends Component {
      * @return FloatValidator
      */
     public function float($key) {
-        return $this->shell->subValidators[$key] =
-            new FloatValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new FloatValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -186,8 +213,10 @@ class Validator extends Component {
      * @return IntegerValidator
      */
     public function int($key) {
-        return $this->shell->subValidators[$key] =
-            new IntegerValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new IntegerValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -196,8 +225,10 @@ class Validator extends Component {
      * @return DecimalValidator
      */
     public function dec($key) {
-        return $this->shell->subValidators[$key] =
-            new DecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new DecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -206,8 +237,10 @@ class Validator extends Component {
      * @return HexadecimalValidator
      */
     public function hex($key) {
-        return $this->shell->subValidators[$key] =
-            new HexadecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new HexadecimalValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -216,8 +249,10 @@ class Validator extends Component {
      * @return BooleanValidator
      */
     public function bool($key) {
-        return $this->shell->subValidators[$key] =
-            new BooleanValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new BooleanValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -226,8 +261,10 @@ class Validator extends Component {
      * @return ArrayValidator
      */
     public function arr($key) {
-        return $this->shell->subValidators[$key] =
-            new ArrayValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v = new ArrayValidator($this->shell->_unsafeVar[$key] ?? null, $this->shell);
+        $v->_isUndefined = !array_key_exists($key, $this->shell->_unsafeVar);
+        $this->shell->subValidators[$key] = $v;
+        return $v;
     }
 
     /**
@@ -281,6 +318,26 @@ class Validator extends Component {
         return $this;
     }
 
+    /**
+     * Ignore the key if value is empty
+     *
+     * @return $this
+     */
+    public function onEmptyIgnore() {
+        $this->onEmptyIgnore = true;
+        return $this;
+    }
+
+    /**
+     * Ignore the key if it's not exist in input data
+     *
+     * @return $this
+     */
+    public function onUndefinedIgnore() {
+        $this->onUndefinedIgnore = true;
+        return $this;
+    }
+
     public function getIsValid() {
         return $this->_isValid;
     }
@@ -308,8 +365,18 @@ class Validator extends Component {
      * @return void
      */
     protected function selfValidate() {
+        if ($this->_isUndefined && $this->onUndefinedIgnore) {
+            $this->_safeVar = null;
+            $this->_isValid = true;
+            goto finish;
+        }
         if ($this->isEmpty($this->_unsafeVar)) {
-            if ($this->onEmptySet) {
+            if ($this->onEmptyIgnore) {
+                $this->_safeVar = null;
+                $this->_isValid = true;
+                $this->_isEmpty = true;
+                goto finish;
+            } else if ($this->onEmptySet) {
                 $this->_safeVar = $this->onEmptySetValue;
                 $this->_isValid = true;
                 goto finish;
@@ -349,12 +416,19 @@ class Validator extends Component {
     final public function validate(callable $onDataInvalid = null):Validator {
         $shell = $this->shell;
         if (count($shell->subValidators)) {
+            $shell->_safeVar = [];
             /**
              * @var Validator $validator
              * @var string    $key
              */
             foreach ($shell->subValidators as $key => $validator) {
                 $validator->selfValidate();
+                if ($validator->_isUndefined && $validator->onUndefinedIgnore) {
+                    continue;
+                }
+                if ($validator->_isEmpty && $validator->onEmptyIgnore) {
+                    continue;
+                }
                 if ($validator->_isValid) {
                     $shell->_safeVar[$key] = $validator->safeVar;
                 } else if ($validator->message !== '') {

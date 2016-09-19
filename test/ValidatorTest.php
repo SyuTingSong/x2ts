@@ -571,4 +571,33 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase {
             ['error', '-0x123'],
         ];
     }
+
+    public function testOnUndefinedIgnore() {
+        $var = XTS::validator($this->testData)
+            ->str('notExistStr')
+            ->onUndefinedIgnore()
+            ->onEmptySet('welcome')
+            ->str('null')
+            ->onUndefinedIgnore()
+            ->onEmptySet('')
+            ->validate()
+            ->safeVar;
+        static::assertArrayNotHasKey('notExistStr', $var);
+        static::assertArrayHasKey('null', $var);
+    }
+
+    public function testOnEmptyIgnore() {
+        $var = XTS::validator($this->testData)
+            ->str('null')
+            ->onEmptyIgnore()
+            ->str('emptyStr')
+            ->onEmptyIgnore()
+            ->arr('emptyArr')
+            ->onEmptyIgnore()
+            ->validate()
+            ->safeVar;
+        static::assertArrayNotHasKey('null', $var);
+        static::assertArrayNotHasKey('emptyStr', $var);
+        static::assertArrayNotHasKey('emptyArr', $var);
+    }
 }
