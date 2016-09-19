@@ -125,10 +125,12 @@ abstract class ComponentFactory extends Component {
                 'singleton' => true,
                 'conf'      => array(
                     'ldap' => array(
-                        'host'     => 'localhost',
-                        'port'     => 389,
-                        'dn_base'  => 'ou=staffs,dc=example,dc=com',
-                        'auth_key' => 'uid',
+                        'host'           => 'localhost',
+                        'port'           => 389,
+                        'dn_base'        => 'ou=staffs,dc=example,dc=com',
+                        'auth_key'       => 'uid',
+                        'admin_dn'       => 'cn=admin,dc=example,dc=com',
+                        'admin_password' => '',
                     ),
                 ),
             ),
