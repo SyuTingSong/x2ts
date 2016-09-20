@@ -46,7 +46,11 @@ class Utils extends Component {
         ldap_set_option($c, LDAP_OPT_PROTOCOL_VERSION, 3);
         $dn = "{$this->conf['ldap']['auth_key']}={$username},{$this->conf['ldap']['dn_base']}";
         Toolkit::trace("LDAP DN: $dn");
-        $result = ldap_read($c, $dn, 'objectClass=person');
+        $result = @ldap_read($c, $dn, 'objectClass=person');
+        if ($result === false) {
+            ldap_close($c);
+            return null;
+        }
         $entries = ldap_get_entries($c, $result);
         ldap_free_result($result);
         ldap_close($c);
