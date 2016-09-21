@@ -16,6 +16,12 @@ use x2ts\ComponentFactory;
  * Class Action
  *
  * @package x2ts\app
+ *
+ * @property-read string $client_ip
+ * @property-read string $current_url
+ * @property-read string $current_uri
+ * @property-read bool   $is_ajax
+ * @property-read bool   $is_https
  */
 abstract class Action {
     use TGetterSetter;
@@ -415,5 +421,61 @@ abstract class Action {
      */
     public function display() {
         return $this->out(call_user_func_array([$this, 'render'], func_get_args()));
+    }
+
+    public function isAjax() {
+        return $this->getIsAjax();
+    }
+
+    public function getIsAjax():bool {
+        return $this->query('ajax')
+        or strtolower($this->header('X_REQUESTED_WITH')) === 'xmlhttprequest';
+    }
+
+    public function isHttps() {
+        return $this->getIsHttps();
+    }
+
+    public function getIsHttps():bool {
+        return
+            strtolower($this->header('X_FORWARDED_SSL')) === 'on' ||
+            strtolower($this->header('X_FORWARDED_PROTO')) === 'https' ||
+            strtolower($this->server('HTTPS')) === 'on';
+    }
+
+    /**
+     * Gets the client side WAN ip address.
+     *
+     * @return string
+     */
+    public function getClientIp():string {
+        $s = $this->server();
+        if (array_key_exists('HTTP_CLIENTIP', $s)) {
+            if (!empty($s['HTTP_CLIENTIP'])) {
+                return $s['HTTP_CLIENTIP'];
+            }
+        }
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $s) && !empty($s['HTTP_X_FORWARDED_FOR'])) {
+            $addresses = explode(',', $s['HTTP_X_FORWARDED_FOR']);
+            while (count($addresses)) {
+                $ip = @trim(array_shift($addresses));
+                if ($ip === '') {
+                    continue;
+                }
+                if (!ComponentFactory::utils()->is_lan_ip($ip)) {
+                    return $ip;
+                }
+            }
+        }
+        return $s['REMOTE_ADDR'];
+    }
+
+    public function getCurrentUrl():string {
+        return ($this->isHttps() ? 'https://' : 'http://') . $this->header('HOST') .
+        $this->server('REQUEST_URI');
+    }
+
+    public function getCurrentUri():string {
+        return explode('?', $this->server('REQUEST_URI'), 2)[0];
     }
 }
