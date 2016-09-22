@@ -16,7 +16,7 @@ use x2ts\cache\ICache;
  *
  * @package x2ts
  * @property ICache saver
- * @property array data
+ * @property array  data
  */
 class Token extends Component {
     protected static $_conf = [
@@ -47,20 +47,28 @@ class Token extends Component {
      */
     protected $expireIn = 0;
 
+    /**
+     * @var array
+     */
+    private static $_tokens = [];
+
     public static function getInstance(string $token = '') {
         $that = new Token();
         if ('' === $token) {
             $that->clean();
-            return $that;
+            return self::$_tokens["$that"] = $that;
         } else {
+            if (self::$_tokens[$token] instanceof Token) {
+                return self::$_tokens[$token];
+            }
             $that->token = $token;
             $t = $that->saver->get($that->saveKey());
             if ($t instanceof Token) {
-                return $t;
+                return self::$_tokens["$t"] = $t;
             } else {
                 $that->data = [];
                 $that->expireIn = $that->conf['expireIn'];
-                return $that;
+                return self::$_tokens["$that"] = $that;
             }
         }
     }
@@ -113,12 +121,16 @@ class Token extends Component {
     }
 
     public function get(string $name) {
-        return $this->data[$name];
+        return $this->data[$name] ?? null;
     }
 
     public function set(string $name, $value) {
         $this->data[$name] = $value;
         return $this;
+    }
+
+    public function isset(string $name) {
+        return isset($this->data[$name]);
     }
 
     public function del(string $name) {
