@@ -269,6 +269,11 @@ abstract class Action {
         return $this;
     }
 
+    /**
+     * @param mixed $var
+     *
+     * @return $this
+     */
     public function dump($var) {
         ob_start();
         /** @noinspection ForgottenDebugOutputInspection */

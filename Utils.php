@@ -108,13 +108,7 @@ class Utils extends Component {
     }
 
     public function random_chars(int $length):string {
-        return substr(
-            str_replace(['+', '/', '='], '', base64_encode(
-                random_bytes($length << 1)
-            )),
-            0,
-            $length
-        );
+        return Toolkit::random_chars($length);
     }
 
     private function hash_ssha(string $password):string {

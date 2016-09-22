@@ -15,6 +15,7 @@ use x2ts\app\Action;
  * @method static db\orm\Model model($modelName)
  * @method static cache\MCache cache()
  * @method static cache\CCache cc()
+ * @method static Token token(string $token = '')
  * @method static view\Hail view()
  * @method static rpc\RPC rpc(string $package = null)
  * @method static daemon\Daemon daemon(array $settings = [])
@@ -74,6 +75,17 @@ abstract class ComponentFactory extends Component {
                 'singleton' => true,
                 'conf'      => array(
                     'cacheDir' => X_RUNTIME_ROOT . '/cache',
+                ),
+            ),
+            'token'     => array(
+                'class'     => '\\x2ts\\Token',
+                'singleton' => false,
+                'conf'      => array(
+                    'saveComponentId' => 'cache',
+                    'saveKeyPrefix'   => 'tok_',
+                    'tokenLength'     => 16,
+                    'autoSave'        => true,
+                    'expireIn'        => 300,
                 ),
             ),
             'view'      => array(

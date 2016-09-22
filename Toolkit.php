@@ -215,6 +215,16 @@ abstract class Toolkit {
         }
     }
 
+    public static function random_chars(int $length):string {
+        return substr(
+            str_replace(['+', '/', '='], '', base64_encode(
+                random_bytes($length << 1)
+            )),
+            0,
+            $length
+        );
+    }
+
     /**
      * @param string $name
      *
