@@ -4,6 +4,7 @@ namespace x2ts;
 
 use InvalidArgumentException;
 use ReflectionClass;
+use x2ts\app\Action;
 
 /**
  * Class ComponentFactory
@@ -163,7 +164,24 @@ abstract class ComponentFactory extends Component {
     }
 
     public static function trace($msg) {
-        Toolkit::trace($msg, 3);
+        Toolkit::trace($msg, X_LOG_DEBUG);
+    }
+
+    /**
+     * @param Action $action
+     *
+     * @return Action
+     * @throws ActionNotBindingException
+     */
+    public static function action($action = null):Action {
+        if ($action instanceof Action) {
+            self::$_singletons['action'] = $action;
+            return $action;
+        } else if (self::$_singletons['action'] instanceof Action) {
+            return self::$_singletons['action'];
+        } else {
+            throw new ActionNotBindingException('action is available after routing');
+        }
     }
 
     /**

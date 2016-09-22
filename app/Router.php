@@ -3,6 +3,7 @@
 namespace x2ts\app;
 
 use x2ts\Component;
+use x2ts\ComponentFactory;
 use x2ts\http\Request;
 use x2ts\http\Response;
 use x2ts\TEventDispatcher;
@@ -10,16 +11,18 @@ use x2ts\Toolkit;
 
 class Router extends Component {
     use TEventDispatcher;
+
     protected static $_conf = array(
-        'defaultAction' => '/index',
-        'actionSuffix' => 'Action',
+        'defaultAction'         => '/index',
+        'actionSuffix'          => 'Action',
         'actionSuffixOmissible' => false,
-        'baseUri' => '/',
+        'baseUri'               => '/',
     );
 
     /**
-     * @param Request $req
+     * @param Request  $req
      * @param Response $res
+     *
      * @return bool
      */
     public function route($req, $res) {
@@ -33,7 +36,7 @@ class Router extends Component {
             $path = trim($this->conf['defaultAction'], '/');
         $pArgs = []; // position based arguments
         for (
-            $parts = explode('/', $path), $lastPart=true;
+            $parts = explode('/', $path), $lastPart = true;
             count($parts);
             array_unshift($pArgs, array_pop($parts))
         ) {
@@ -59,6 +62,7 @@ class Router extends Component {
                     if ($this->dispatch('PostRoute', $action, $suffix) === false) {
                         return false;
                     }
+                    ComponentFactory::action($action);
                     $action->run($pArgs);
                     return true;
                 }
@@ -71,12 +75,12 @@ class Router extends Component {
         return false;
     }
 
-    public function onPreRoute($callback, $state=null) {
+    public function onPreRoute($callback, $state = null) {
         $this->on('PreRoute', $callback, $state);
         return $this;
     }
 
-    public function onPostRoute($callback, $state=null) {
+    public function onPostRoute($callback, $state = null) {
         $this->on('PostRoute', $callback, $state);
         return $this;
     }
