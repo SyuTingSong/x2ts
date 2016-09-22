@@ -16,6 +16,7 @@ use x2ts\app\Action;
  * @method static cache\MCache cache()
  * @method static cache\CCache cc()
  * @method static Token token(string $token = '')
+ * @method static Session session()
  * @method static view\Hail view()
  * @method static rpc\RPC rpc(string $package = null)
  * @method static daemon\Daemon daemon(array $settings = [])
@@ -86,6 +87,25 @@ abstract class ComponentFactory extends Component {
                     'tokenLength'     => 16,
                     'autoSave'        => true,
                     'expireIn'        => 300,
+                ),
+            ),
+            'session'   => array(
+                'class'     => '\\x2ts\\Session',
+                'singleton' => true,
+                'conf'      => array(
+                    'saveComponentId' => 'cache',
+                    'saveKeyPrefix'   => 'session_',
+                    'tokenLength'     => 16,
+                    'autoSave'        => true,
+                    'expireIn'        => 604800,
+                    'cookie'          => array(
+                        'name'      => 'X_SESSION_ID',
+                        'expireIn'  => null,
+                        'path'      => null,
+                        'domain'    => null,
+                        'secure'    => null,
+                        'httpOnly'  => true,
+                    ),
                 ),
             ),
             'view'      => array(
