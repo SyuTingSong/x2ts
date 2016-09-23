@@ -62,7 +62,7 @@ abstract class ComponentFactory extends Component {
                 ),
             ),
             'cache'     => array(
-                'class'     => '\\x2ts\\MCache',
+                'class'     => '\\x2ts\\RCache',
                 'singleton' => true,
                 'conf'      => array(
                     'host'       => 'localhost',
