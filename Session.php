@@ -35,16 +35,18 @@ class Session extends Token {
         ],
     ];
 
-    public static function getInstance() {
+    public static function getInstance(string $token = '') {
         $action = ComponentFactory::action();
         $sessionId = ComponentFactory::action()->cookie(static::$_conf['cookie']['name'], '');
+        Toolkit::trace('SessionId from cookie: ' . $sessionId);
 
         $session = parent::getInstance($sessionId);
         if (!$sessionId) {
             $action->setCookie(
-                static::$_conf['cookie'],
+                static::$_conf['cookie']['name'],
                 (string) $session,
-                time() + static::$_conf['cookie']['expireIn'],
+                static::$_conf['cookie']['expireIn'] ?
+                    time() + static::$_conf['cookie']['expireIn'] : null,
                 static::$_conf['cookie']['path'],
                 static::$_conf['cookie']['domain'],
                 static::$_conf['cookie']['secure'],

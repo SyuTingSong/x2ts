@@ -228,18 +228,21 @@ abstract class Action {
     /**
      * @param string $name
      * @param string $value
+     * @param bool $replace
+     * @param int $status
      *
      * @return $this
      */
-    public function setHeader() {
-        $args = func_get_args();
+    public function setHeader(...$args) {
         if (is_array($args[0])) {
-            foreach ($args[0] as $key => $value) {
-                $this->response->setHeader($key, $value);
+            $headers = array_shift($args);
+            foreach ($headers as $key => $value) {
+                $this->response->setHeader($key, $value, ...$args);
             }
         } else {
-            list($key, $value) = $args;
-            $this->response->setHeader($key, $value);
+            $key = array_shift($args);
+            $value = array_shift($args);
+            $this->response->setHeader($key, $value, ...$args);
         }
         return $this;
     }
