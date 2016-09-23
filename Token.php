@@ -58,7 +58,7 @@ class Token extends Component {
             $that->clean();
             return self::$_tokens["$that"] = $that;
         } else {
-            if (self::$_tokens[$token] instanceof Token) {
+            if (array_key_exists($token, self::$_tokens) && self::$_tokens[$token] instanceof Token) {
                 return self::$_tokens[$token];
             }
             $that->token = $token;
