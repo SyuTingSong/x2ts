@@ -28,7 +28,7 @@ class Session extends Token {
         'cookie'          => [
             'name'     => 'X_SESSION_ID',
             'expireIn' => null,
-            'path'     => null,
+            'path'     => '/',
             'domain'   => null,
             'secure'   => null,
             'httpOnly' => true,

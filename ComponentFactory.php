@@ -101,7 +101,7 @@ abstract class ComponentFactory extends Component {
                     'cookie'          => array(
                         'name'     => 'X_SESSION_ID',
                         'expireIn' => null,
-                        'path'     => null,
+                        'path'     => '/',
                         'domain'   => null,
                         'secure'   => null,
                         'httpOnly' => true,
