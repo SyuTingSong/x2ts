@@ -68,4 +68,8 @@ class Session extends Token {
         );
         parent::destroy();
     }
+
+    public function getSessionId() {
+        return (string) $this;
+    }
 }

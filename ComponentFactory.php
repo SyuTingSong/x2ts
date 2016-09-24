@@ -91,7 +91,7 @@ abstract class ComponentFactory extends Component {
             ),
             'session'   => array(
                 'class'     => '\\x2ts\\Session',
-                'singleton' => true,
+                'singleton' => false,
                 'conf'      => array(
                     'saveComponentId' => 'cache',
                     'saveKeyPrefix'   => 'session_',
@@ -99,12 +99,12 @@ abstract class ComponentFactory extends Component {
                     'autoSave'        => true,
                     'expireIn'        => 604800,
                     'cookie'          => array(
-                        'name'      => 'X_SESSION_ID',
-                        'expireIn'  => null,
-                        'path'      => null,
-                        'domain'    => null,
-                        'secure'    => null,
-                        'httpOnly'  => true,
+                        'name'     => 'X_SESSION_ID',
+                        'expireIn' => null,
+                        'path'     => null,
+                        'domain'   => null,
+                        'secure'   => null,
+                        'httpOnly' => true,
                     ),
                 ),
             ),
