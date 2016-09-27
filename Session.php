@@ -58,7 +58,7 @@ class Session extends Token {
 
     public function destroy() {
         ComponentFactory::action()->setCookie(
-            static::$_conf['cookie'],
+            static::$_conf['cookie']['name'],
             '',
             strtotime('1997-07-01 00:00:00 GMT+0800'),
             static::$_conf['cookie']['path'],
