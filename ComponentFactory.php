@@ -191,12 +191,12 @@ abstract class ComponentFactory extends Component {
         return self::__callStatic($componentId, array());
     }
 
-    public static function log($msg, $level = X_LOG_DEBUG, $category = '') {
-        Toolkit::log($msg, $level, $category);
+    public static function log($msg, $level = X_LOG_DEBUG, $category = '', $traceIndex = 2) {
+        Toolkit::log($msg, $level, $category, $traceIndex);
     }
 
-    public static function trace($msg) {
-        Toolkit::trace($msg, X_LOG_DEBUG);
+    public static function trace($msg, $traceIndex = 3) {
+        Toolkit::trace($msg, $traceIndex);
     }
 
     /**
