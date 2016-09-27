@@ -53,7 +53,7 @@ class Token extends Component {
     private static $_tokens = [];
 
     public static function getInstance(string $token = '') {
-        $that = new Token();
+        $that = new static();
         if ('' === $token) {
             $that->clean();
             return self::$_tokens["$that"] = $that;
