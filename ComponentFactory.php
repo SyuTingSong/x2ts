@@ -55,9 +55,9 @@ abstract class ComponentFactory extends Component {
                         'useSchemaCache'      => false,
                         'schemaCacheDuration' => 0,
                     ),
-                    'cacheConf'            => array(
-                        'cacheId'  => 'cache',
-                        'duration' => 60,
+                    'manager'              => array(
+                        'class' => '\x2ts\db\orm\DirectModelManager',
+                        'conf'  => [],
                     ),
                 ),
             ),

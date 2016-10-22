@@ -7,30 +7,32 @@ use BadMethodCallException;
 use IteratorAggregate;
 use JsonSerializable;
 use x2ts\Component;
+use x2ts\ComponentFactory;
 use x2ts\db\IDataBase;
+use x2ts\db\MySQL;
 use x2ts\db\SqlBuilder;
 use x2ts\IAssignable;
 use x2ts\MethodNotImplementException;
 use x2ts\ObjectIterator;
 use x2ts\Toolkit;
-use x2ts\ComponentFactory;
 
 /**
  * Class Model
  *
  * @package x2ts
- * @property-read array       $properties
- * @property-read TableSchema $tableSchema
- * @property-read IDataBase   $db
- * @property-read string      $modelName
- * @property-read bool        $isNewRecord
- * @property-read mixed       $oldPK
- * @property-read mixed       $pk
- * @property-read string      $pkName
- * @property-read string      $tableName
- * @property-read array       $modified
- * @property-read array       $relations
- * @property-read SqlBuilder  $builder
+ * @property array              $modified
+ * @property-read array         $properties
+ * @property-read TableSchema   $tableSchema
+ * @property-read MySQL         $db
+ * @property-read string        $modelName
+ * @property-read bool          $isNewRecord
+ * @property-read mixed         $oldPK
+ * @property-read mixed         $pk
+ * @property-read string        $pkName
+ * @property-read string        $tableName
+ * @property-read array         $relations
+ * @property-read SqlBuilder    $builder
+ * @property-read IModelManager $modelManager
  */
 class Model extends Component implements
     ArrayAccess,
@@ -40,7 +42,6 @@ class Model extends Component implements
     const INSERT_NORMAL = 0;
     const INSERT_IGNORE = 1;
     const INSERT_UPDATE = 2;
-    const INSERT_REPLACE = 3;
 
     /**
      * @var bool
@@ -94,9 +95,9 @@ class Model extends Component implements
             'useSchemaCache'      => false,
             'schemaCacheDuration' => 0,
         ),
-        'cacheConf'            => array(
-            'cacheId'  => 'cache',
-            'duration' => 60,
+        'manager'              => array(
+            'class' => '\x2ts\db\orm\DirectModelManager',
+            'conf'  => [],
         ),
     );
 
@@ -104,6 +105,10 @@ class Model extends Component implements
      * @var SqlBuilder
      */
     private $_builder;
+
+    public function getSqlBuilder() {
+        return $this->_builder;
+    }
 
     public function __sleep() {
         return array('_modelName', '_properties', '_modified');
@@ -130,7 +135,19 @@ class Model extends Component implements
     public static function conf($conf = array()) {
         parent::conf($conf);
         TableSchema::conf(static::$_conf['schemaConf']);
-        CachedModel::conf(static::$_conf['cacheConf']);
+    }
+
+    /**
+     * @var \ReflectionMethod
+     */
+    protected $_reflectionMMGetter;
+
+    public function getModelManager():IModelManager {
+        if (null === $this->_reflectionMMGetter) {
+            $this->_reflectionMMGetter = (new \ReflectionClass($this->conf['manager']['class']))
+                ->getMethod('getInstance');
+        }
+        return $this->_reflectionMMGetter->invoke(null, $this, $this->conf['manager']['conf']);
     }
 
     /**
@@ -139,72 +156,16 @@ class Model extends Component implements
      * @return null|Model
      */
     public function load($pk) {
-        $r = $this->_builder->select('*')
-            ->from($this->tableName)
-            ->where("`{$this->pkName}`=:pk")
-            ->query(array(':pk' => $pk));
-        if (count($r)) {
-            return $this->setupOne($r[0]);
-        }
-        return null;
+        return $this->modelManager->load($pk);
     }
 
     /**
      * @param int $scenario [optional]
      *
      * @return $this
-     * @throws MethodNotImplementException
      */
     public function save($scenario = Model::INSERT_NORMAL) {
-        $pkName = $this->pkName;
-        if ($this->isNewRecord) {
-            $pk = 0;
-            switch ($scenario) {
-                case Model::INSERT_NORMAL:
-                    $this->_builder
-                        ->insertInto($this->tableName)
-                        ->columns($this->tableSchema->columnNames)
-                        ->values($this->_properties)
-                        ->query();
-                    $pk = $this->db->getLastInsertId();
-                    if (empty($pk) && !empty($this->pk)) {
-                        $pk = $this->pk;
-                    }
-                    break;
-                case Model::INSERT_IGNORE:
-                    $this->builder
-                        ->insertIgnoreInto($this->tableName)
-                        ->columns($this->tableSchema->columnNames)
-                        ->values($this->_properties)
-                        ->query();
-                    $pk = $this->db->getLastInsertId();
-                    break;
-                case Model::INSERT_UPDATE:
-                    $this->_builder
-                        ->insertInto($this->tableName)
-                        ->columns($this->tableSchema->columnNames)
-                        ->values($this->_properties)
-                        ->onDupKeyUpdate($this->_modified)
-                        ->query();
-                    $pk = $this->db->getLastInsertId();
-                    break;
-                case Model::INSERT_REPLACE:
-                    throw new MethodNotImplementException('Using REPLACE is dangerous! It may brokes the foreign key constraint. So x2ts ORM NOT implement replace support');
-            }
-            if ($pk) {
-                $this->load($pk);
-            }
-        } else if (0 !== count($this->_modified)) {
-            $this->_builder
-                ->update($this->tableName)
-                ->set($this->_modified)
-                ->where("`$pkName`=:_table_pk", array(
-                    ':_table_pk' => $this->oldPK,
-                ))
-                ->query();
-            $this->_modified = array();
-        }
-        return $this;
+        return $this->modelManager->save($scenario);
     }
 
     /**
@@ -213,69 +174,29 @@ class Model extends Component implements
      * @return int
      */
     public function remove($pk = null) {
-        if (is_null($pk)) {
-            $pk = $this->getPK();
-        }
-        $this->_builder
-            ->delete()
-            ->from($this->tableName)
-            ->where("`{$this->pkName}`=:pk", array(':pk' => $pk,))
-            ->query();
-        return $this->db->getAffectedRows();
+        return $this->modelManager->remove($pk);
     }
 
     /**
-     * @param string  $condition
-     * @param array   $params
-     * @param boolean $clone
+     * @param string $condition
+     * @param array  $params
      *
      * @return null|Model
      */
-    public function one(string $condition = null, array $params = [], $clone = false) {
-        $this->_builder->select('*')
-            ->from($this->tableName);
-        if (!empty($condition)) {
-            $this->_builder->where($condition, $params);
-        }
-        $r = $this->_builder->limit(1)
-            ->query();
-        if (!is_array($r) || 0 === count($r)) {
-            return null;
-        }
-        $one = $clone ? clone $this : $this;
-        return $one->setupOne($r[0]);
+    public function one(string $condition = null, array $params = []) {
+        return $this->modelManager->one($condition, $params);
     }
 
     /**
-     * @param string   $condition
-     * @param array    $params
-     * @param null|int $offset
-     * @param null|int $limit
+     * @param string $condition
+     * @param array  $params
+     * @param int    $offset
+     * @param int    $limit
      *
      * @return array
      */
     public function many($condition = null, $params = array(), $offset = null, $limit = null) {
-        $this->_builder
-            ->select('*')
-            ->from($this->tableName);
-
-        if (!empty($condition)) {
-            $this->_builder->where($condition, $params);
-        }
-
-        if (!is_null($offset)) {
-            if (is_null($limit)) {
-                $this->_builder->limit($offset);
-            } else {
-                $this->_builder->limit($offset, $limit);
-            }
-        }
-        $r = $this->_builder->query();
-        if (!is_array($r) or 0 === count($r)) {
-            return array();
-        } else {
-            return $this->setup($r);
-        }
+        return $this->modelManager->many($condition, $params, $offset, $limit);
     }
 
     /**
@@ -285,19 +206,21 @@ class Model extends Component implements
      * @return int|bool
      */
     public function count($condition = null, $params = array()) {
-        $this->_builder->select('COUNT(*)')
-            ->from($this->tableName);
-        if (null !== $condition) {
-            $this->_builder->where($condition, $params);
-        }
-        $r = $this->_builder->query();
-        if (!is_array($r)) {
-            return false;
-        }
-        return (int) reset($r[0]);
+        return $this->modelManager->count($condition, $params);
     }
 
-    private function setupOne($properties) {
+    /**
+     * @param string $sql
+     * @param array  $params
+     *
+     * @return array
+     * @throws \x2ts\db\DataBaseException
+     */
+    public function sql($sql, $params = array()) {
+        return $this->modelManager->sql($sql, $params);
+    }
+
+    protected function setupOne($properties) {
         $pkName = $this->pkName;
         /** @var Column $column */
         foreach ($this->tableSchema->columns as $column) {
@@ -326,6 +249,11 @@ class Model extends Component implements
         return $this;
     }
 
+    /**
+     * @param array $properties
+     *
+     * @return array|Model
+     */
     public function setup($properties) {
         if (is_array(reset($properties))) {
             $modelList = array();
@@ -337,15 +265,6 @@ class Model extends Component implements
             return $modelList;
         } else {
             return $this->setupOne($properties);
-        }
-    }
-
-    public function sql($sql, $params = array()) {
-        $r = $this->db->query($sql, $params);
-        if (empty($r)) {
-            return array();
-        } else {
-            return $this->setup($r);
         }
     }
 
@@ -546,12 +465,7 @@ class Model extends Component implements
         int $offset = 0,
         int $limit = 200
     ) {
-        Toolkit::trace('Loading relation object');
-        $relation = $this->relations[$name];
-        if ($relation instanceof Relation) {
-            return $relation->fetchRelated($this, $condition, $params, $offset, $limit);
-        }
-        return null;
+        return $this->modelManager->loadRelationObj($name, $condition, $params, $offset, $limit);
     }
 
     /**
