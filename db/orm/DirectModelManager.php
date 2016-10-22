@@ -12,7 +12,7 @@ namespace x2ts\db\orm;
 use x2ts\MethodNotImplementException;
 use x2ts\Toolkit;
 
-final class DirectIModelManager implements IModelManager {
+final class DirectModelManager implements IModelManager {
     /**
      * @var Model
      */
@@ -22,9 +22,9 @@ final class DirectIModelManager implements IModelManager {
 
     protected function __construct() { }
 
-    public static function getInstance(Model $model):DirectIModelManager {
+    public static function getInstance(Model $model):DirectModelManager {
         if (null === self::$instance) {
-            self::$instance = new DirectIModelManager();
+            self::$instance = new DirectModelManager();
         }
         self::$instance->model = $model;
         return self::$instance;
