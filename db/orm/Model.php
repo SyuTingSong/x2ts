@@ -252,7 +252,7 @@ class Model extends Component implements
     /**
      * @param array $properties
      *
-     * @return array|Model
+     * @return Model[]|Model
      */
     public function setup($properties) {
         if (is_array(reset($properties))) {
@@ -405,13 +405,14 @@ class Model extends Component implements
         return ComponentFactory::getComponent($this->conf['dbId']);
     }
 
+    private static $__getters = [];
     public function __get($name) {
         if ($name === 'conf') {
             return static::$_conf;
         }
         $getter = Toolkit::toCamelCase("get $name");
         $snakeName = Toolkit::to_snake_case($name);
-        if (method_exists($this, $getter)) {
+        if (self::$__getters[$name] ?? self::$__getters[$name] = method_exists($this, $getter)) {
             return $this->$getter();
         } else if (array_key_exists($name, $this->_properties)) {
             return $this->_properties[$name];
@@ -465,7 +466,12 @@ class Model extends Component implements
         int $offset = 0,
         int $limit = 200
     ) {
-        return $this->modelManager->loadRelationObj($name, $condition, $params, $offset, $limit);
+        Toolkit::trace("Loading relation $name");
+        if (array_key_exists($name, $this->relations)) {
+            $relation = $this->relations[$name];
+            return $relation->fetchRelated($this, $condition, $params, $offset, $limit);
+        }
+        return null;
     }
 
     /**
