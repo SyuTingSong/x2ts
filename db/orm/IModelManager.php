@@ -11,11 +11,19 @@ namespace x2ts\db\orm;
 
 interface IModelManager {
     /**
+     * @param Model $model
+     * @param array $conf
+     *
+     * @return IModelManager
+     */
+    public static function getInstance(Model $model, array $conf = []);
+
+    /**
      * @param mixed $pk
      *
-     * @return int
+     * @return null|Model
      */
-    public function remove($pk = null);
+    public function load($pk);
 
     /**
      * @param int $scenario [optional]
@@ -27,9 +35,9 @@ interface IModelManager {
     /**
      * @param mixed $pk
      *
-     * @return null|Model
+     * @return int
      */
-    public function load($pk);
+    public function remove($pk = null);
 
     /**
      * @param string   $condition
@@ -37,7 +45,7 @@ interface IModelManager {
      * @param null|int $offset
      * @param null|int $limit
      *
-     * @return array
+     * @return Model[]
      */
     public function many($condition = null, $params = array(), $offset = null, $limit = null);
 
@@ -66,11 +74,4 @@ interface IModelManager {
      */
     public function count($condition = null, $params = array());
 
-    public function loadRelationObj(
-        string $name,
-        string $condition = null,
-        array $params = [],
-        int $offset = 0,
-        int $limit = 200
-    );
 }

@@ -9,9 +9,6 @@
 namespace x2ts\db\orm;
 
 
-use x2ts\MethodNotImplementException;
-use x2ts\Toolkit;
-
 final class DirectModelManager implements IModelManager {
     /**
      * @var Model
@@ -22,7 +19,13 @@ final class DirectModelManager implements IModelManager {
 
     protected function __construct() { }
 
-    public static function getInstance(Model $model):DirectModelManager {
+    /**
+     * @param Model $model
+     * @param array $conf
+     *
+     * @return DirectModelManager
+     */
+    public static function getInstance(Model $model, array $conf = []) {
         if (null === self::$instance) {
             self::$instance = new DirectModelManager();
         }
@@ -34,7 +37,6 @@ final class DirectModelManager implements IModelManager {
      * @param int $scenario [optional]
      *
      * @return Model
-     * @throws MethodNotImplementException
      */
     public function save($scenario = Model::INSERT_NORMAL) {
         $pkName = $this->model->pkName;
@@ -107,7 +109,7 @@ final class DirectModelManager implements IModelManager {
      * @param null|int $offset
      * @param null|int $limit
      *
-     * @return array
+     * @return Model[]
      */
     public function many($condition = null, $params = array(), $offset = null, $limit = null) {
         $this->model->builder
@@ -157,7 +159,7 @@ final class DirectModelManager implements IModelManager {
      * @param string $sql
      * @param array  $params
      *
-     * @return array
+     * @return Model[]
      * @throws \x2ts\db\DataBaseException
      */
     public function sql($sql, $params = array()) {
@@ -185,21 +187,6 @@ final class DirectModelManager implements IModelManager {
             return false;
         }
         return (int) reset($r[0]);
-    }
-
-    public function loadRelationObj(
-        string $name,
-        string $condition = null,
-        array $params = [],
-        int $offset = 0,
-        int $limit = 200
-    ) {
-        Toolkit::trace("Loading relation object $name");
-        $relation = $this->model->relations[$name];
-        if ($relation instanceof Relation) {
-            return $relation->fetchRelated($this->model, $condition, $params, $offset, $limit);
-        }
-        return null;
     }
 
     /**
