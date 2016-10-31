@@ -194,9 +194,13 @@ abstract class Toolkit {
             }
             if ($category === '') {
                 $trace = debug_backtrace();
-                $class = $trace[$traceIndex]['class'] ?? 'FUNC';
-                $func = $trace[$traceIndex]['function'];
-                $category = "$class::$func";
+                if ($traceIndex < count($trace)) {
+                    $class = $trace[$traceIndex]['class'] ?? 'FUNC';
+                    $func = $trace[$traceIndex]['function'];
+                    $category = "$class::$func";
+                } else {
+                    $category = 'GLOBAL';
+                }
             }
             fprintf(
                 self::$logFile, "%s[%s][%s][%s]%s\x1B[0m\n",
@@ -232,11 +236,11 @@ abstract class Toolkit {
      */
     private static function extractWords($name) {
         if (strpos($name, '_') === false) {
-            $r = preg_replace('#[A-Z]#', ' $0', lcfirst($name));
+            $r = preg_replace('#[A-Z]#', ' $0', $name);
         } else {
             $r = strtr($name, array('_' => ' '));
         }
-        $r = strtolower(trim($r));
+        $r = strtolower(ltrim($r));
         return $r;
     }
 }
