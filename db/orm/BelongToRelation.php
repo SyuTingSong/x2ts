@@ -29,6 +29,9 @@ class BelongToRelation extends Relation {
         $limit = null
     ) {
         Toolkit::trace("Relation load {$this->name}");
+        if (null === $model->properties[$this->property]) {
+            return null;
+        }
         $condition = $this->foreignTableField . '=:_fk' .
             ((null === $condition || '' === $condition) ?
                 '' : " AND $condition");
