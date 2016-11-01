@@ -78,13 +78,17 @@ final class RedisCachedModelManager implements IModelManager {
         $key = $this->getPoolKey($pk);
         $model = @unserialize($this->redis()->get($key));
 
-        if (!$model instanceof Model &&
-            ($model = DirectModelManager::getInstance($this->model)->load($pk))
-        ) {
-            $this->poolSet($model);
+        if ($model instanceof Model) {
+            if ($model->isNewRecord || count($model->modified) > 0) {
+                Toolkit::log(
+                    "The cache of {$model->tableName}-{$model->pk} is polluted",
+                    X_LOG_WARNING
+                );
+                return $this->loadFromDb($pk);
+            }
+            return $this->model->setup($model->properties);
         }
-
-        return $model;
+        return $this->loadFromDb($pk);
     }
 
     /**
@@ -306,5 +310,13 @@ final class RedisCachedModelManager implements IModelManager {
             $this->conf['duration']['many']
         );
         return $models;
+    }
+
+    private function loadFromDb($pk) {
+        if (DirectModelManager::getInstance($this->model)->load($pk)) {
+            $this->poolSet($this->model);
+            return $this->model;
+        }
+        return null;
     }
 }
