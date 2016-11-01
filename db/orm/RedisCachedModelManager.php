@@ -256,12 +256,16 @@ final class RedisCachedModelManager implements IModelManager {
     }
 
     private function removeAll(...$keyPrefixes) {
-        $allKeys = array_reduce(array_map(function ($prefix) {
-            return $this->redis()->keys("$prefix*");
-        }, $keyPrefixes), function ($allKeys, $keys) {
-            return array_merge($allKeys, $keys);
-        }, []);
-        $this->redis()->del($allKeys);
+        $keyLength = strlen($this->redis()->conf['keyPrefix']);
+        $allKeys = [];
+        foreach ($keyPrefixes as $keyPrefix) {
+            $keys = $this->redis()->keys("$keyPrefix*");
+            foreach($keys as $key) {
+                $allKeys[] = substr($key, $keyLength);
+            }
+        }
+        $number = $this->redis()->del($allKeys);
+        Toolkit::trace("$number keys removed");
     }
 
     /**
