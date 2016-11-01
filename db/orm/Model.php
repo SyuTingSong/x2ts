@@ -44,11 +44,6 @@ class Model extends Component implements
     const INSERT_UPDATE = 2;
 
     /**
-     * @var bool
-     */
-    protected $_isNewRecord = true;
-
-    /**
      * @var mixed
      */
     protected $_oldPK = null;
@@ -111,7 +106,7 @@ class Model extends Component implements
     }
 
     public function __sleep() {
-        return array('_modelName', '_properties', '_modified', '_isNewRecord');
+        return ['_modelName', '_properties', '_modified', '_oldPK'];
     }
 
     public function __wakeUp() {
@@ -244,8 +239,7 @@ class Model extends Component implements
             }
         }
         $this->_modified = array();
-        $this->_oldPK = isset($this->_properties[$pkName]) ? $this->_properties[$pkName] : null;
-        $this->_isNewRecord = !isset($this->_oldPK);
+        $this->_oldPK = $this->_properties[$pkName] ?? null;
         return $this;
     }
 
@@ -358,7 +352,7 @@ class Model extends Component implements
      * @return bool
      */
     public function getIsNewRecord() {
-        return $this->_isNewRecord;
+        return null === $this->_oldPK;
     }
 
     /**
