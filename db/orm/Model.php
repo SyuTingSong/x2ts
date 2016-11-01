@@ -405,14 +405,13 @@ class Model extends Component implements
         return ComponentFactory::getComponent($this->conf['dbId']);
     }
 
-    private static $__getters = [];
     public function __get($name) {
         if ($name === 'conf') {
             return static::$_conf;
         }
         $getter = Toolkit::toCamelCase("get $name");
         $snakeName = Toolkit::to_snake_case($name);
-        if (self::$__getters[$name] ?? self::$__getters[$name] = method_exists($this, $getter)) {
+        if (method_exists($this, $getter)) {
             return $this->$getter();
         } else if (array_key_exists($name, $this->_properties)) {
             return $this->_properties[$name];
