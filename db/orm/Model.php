@@ -111,7 +111,7 @@ class Model extends Component implements
     }
 
     public function __sleep() {
-        return array('_modelName', '_properties', '_modified');
+        return array('_modelName', '_properties', '_modified', '_isNewRecord');
     }
 
     public function __wakeUp() {
