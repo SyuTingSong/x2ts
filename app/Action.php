@@ -329,7 +329,9 @@ abstract class Action {
         if (!empty($goto))
             $res['goto'] = $goto;
 
-        $this->setHeader('Content-Type', 'application/json')->out(json_encode($res));
+        $this->setHeader('Content-Type', 'application/json')
+            ->setHeader('Cache-Control', 'no-cache; must-revalidate')
+            ->out(json_encode($res));
     }
 
     /**
