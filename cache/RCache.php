@@ -1,35 +1,40 @@
 <?php
 
 namespace x2ts\cache;
+
 use Redis;
 use x2ts\Component;
 use x2ts\Toolkit;
 
 /**
  * Class RCache
+ *
  * @package x2ts
  * @property-read Redis $cache
  */
-class RCache extends Component implements  ICache {
+class RCache extends Component implements ICache {
     /**
      * @var Redis $_cache
      */
     protected $_cache;
+
     /**
      * @varStatic array
      */
     protected static $_conf = array(
-        'host' => 'localhost',
-        'port' => 6379, //int, 6379 by default
-        'timeout' => 0, //float, value in seconds, default is 0 meaning unlimited
-        'persistent' => false, //bool, false by default
-        'database' => 0, //number, 0 by default
-        'auth' => null, //string, null by default
-        'keyPrefix' => '',
+        'host'           => 'localhost',
+        'port'           => 6379, //int, 6379 by default
+        'timeout'        => 0, //float, value in seconds, default is 0 meaning unlimited
+        'persistent'     => false, //bool, false by default
+        'persistentHash' => 'rcache',//identity for the requested persistent connection
+        'database'       => 0, //number, 0 by default
+        'auth'           => null, //string, null by default
+        'keyPrefix'      => '',
     );
 
     /**
      * @param string $key
+     *
      * @return mixed
      */
     public function get($key) {
@@ -45,8 +50,9 @@ class RCache extends Component implements  ICache {
 
     /**
      * @param string $key
-     * @param mixed $value
-     * @param int $duration
+     * @param mixed  $value
+     * @param int    $duration
+     *
      * @return void
      */
     public function set($key, $value, $duration = 0) {
@@ -57,6 +63,7 @@ class RCache extends Component implements  ICache {
 
     /**
      * @param string $key
+     *
      * @return boolean
      */
     public function remove($key) {
@@ -74,7 +81,8 @@ class RCache extends Component implements  ICache {
 
     /**
      * @param string $key
-     * @param int $step
+     * @param int    $step
+     *
      * @return int
      */
     public function inc($key, $step = 1) {
@@ -88,7 +96,8 @@ class RCache extends Component implements  ICache {
 
     /**
      * @param string $key
-     * @param int $step
+     * @param int    $step
+     *
      * @return int
      */
     public function dec($key, $step = 1) {
@@ -108,7 +117,12 @@ class RCache extends Component implements  ICache {
             Toolkit::trace("RCache init");
             $this->_cache = new Redis();
             if (static::$_conf['persistent']) {
-                $this->_cache->pconnect(static::$_conf['host'], static::$_conf['port'], static::$_conf['timeout']);
+                $this->_cache->pconnect(
+                    static::$_conf['host'],
+                    static::$_conf['port'],
+                    static::$_conf['timeout'],
+                    static::$_conf['persistentHash']
+                );
             } else {
                 $this->_cache->connect(static::$_conf['host'], static::$_conf['port'], static::$_conf['timeout']);
             }
