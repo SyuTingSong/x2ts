@@ -100,12 +100,7 @@ final class RedisCachedModelManager implements IModelManager {
         Toolkit::trace('Redis cached save');
         $result = DirectModelManager::getInstance($this->model)
             ->save($scenario);
-        $this->removeAll(
-            "rmc:p:{$this->model->db->dbName}:{$this->model->tableName}:{$this->model->pk}",
-            "rmc:c:{$this->model->db->dbName}:{$this->model->tableName}",
-            "rmc:m:{$this->model->db->dbName}:{$this->model->tableName}",
-            "rmc:o:{$this->model->db->dbName}:{$this->model->tableName}"
-        );
+        $this->removeAllRelatedCache();
         return $result;
     }
 
@@ -117,13 +112,7 @@ final class RedisCachedModelManager implements IModelManager {
     public function remove($pk = null) {
         Toolkit::trace('Redis cached remove');
         $result = DirectModelManager::getInstance($this->model)->remove($pk);
-        $key = $this->getPoolKey($pk ?? $this->model->pk);
-        $this->removeAll(
-            $key,
-            "rmc:c:{$this->model->db->dbName}:{$this->model->tableName}",
-            "rmc:m:{$this->model->db->dbName}:{$this->model->tableName}",
-            "rmc:o:{$this->model->db->dbName}:{$this->model->tableName}"
-        );
+        $this->removeAllRelatedCache();
         return $result;
     }
 
@@ -166,7 +155,7 @@ final class RedisCachedModelManager implements IModelManager {
             $model = DirectModelManager::getInstance($this->model)
                 ->one($condition, $params);
             if ($model) {
-                $this->redis()->set(
+                $this->set(
                     $key,
                     $model->pk,
                     $this->conf['duration']['one']
@@ -209,7 +198,7 @@ final class RedisCachedModelManager implements IModelManager {
         if (!is_int($count) && !ctype_digit($count)) {
             $count = DirectModelManager::getInstance($this->model)
                 ->count($condition, $params);
-            $this->redis()->set(
+            $this->set(
                 $key,
                 $count,
                 $this->conf['duration']['count']
@@ -218,7 +207,10 @@ final class RedisCachedModelManager implements IModelManager {
         return $count;
     }
 
-    protected function getPoolKey($pk) {
+    protected function getPoolKey($pk = null) {
+        if (null === $pk) {
+            $pk = $this->model->pk;
+        }
         return "rmc:p:{$this->model->db->dbName}:{$this->model->tableName}:{$pk}";
     }
 
@@ -246,6 +238,11 @@ final class RedisCachedModelManager implements IModelManager {
         return "rmc:c:{$this->model->db->dbName}:{$this->model->tableName}:{$md5}";
     }
 
+    /**
+     * @param Model $model
+     *
+     * @return $this
+     */
     private function poolSet(Model $model) {
         $this->redis()->set(
             $this->getPoolKey($model->pk),
@@ -253,19 +250,6 @@ final class RedisCachedModelManager implements IModelManager {
             $this->conf['duration']['pool']
         );
         return $this;
-    }
-
-    private function removeAll(...$keyPrefixes) {
-        $keyLength = strlen($this->redis()->conf['keyPrefix']);
-        $allKeys = [];
-        foreach ($keyPrefixes as $keyPrefix) {
-            $keys = $this->redis()->keys("$keyPrefix*");
-            foreach($keys as $key) {
-                $allKeys[] = substr($key, $keyLength);
-            }
-        }
-        $number = $this->redis()->del($allKeys);
-        Toolkit::trace("$number keys removed");
     }
 
     /**
@@ -308,7 +292,7 @@ final class RedisCachedModelManager implements IModelManager {
             $this->poolSet($model);
             return $model->pk;
         }, $models);
-        $this->redis()->set(
+        $this->set(
             $key,
             serialize($pks),
             $this->conf['duration']['many']
@@ -322,5 +306,26 @@ final class RedisCachedModelManager implements IModelManager {
             return $this->model;
         }
         return null;
+    }
+
+    private function set($key, $value, $duration = 0) {
+        $this->redis()->sAdd($this->group(), $key);
+        $this->redis()->set($key, $value, $duration);
+    }
+
+    private function group() {
+        return "rmcg:{$this->model->db->dbName}:{$this->model->tableName}:";
+    }
+
+    private function removeAllRelatedCache() {
+        $groupKey = $this->group();
+        $keysInGroup = $this->redis()->sMembers($groupKey);
+        if (!$keysInGroup) {
+            $keysInGroup = [];
+        }
+        $num = $this->redis()->del($this->getPoolKey(), ...$keysInGroup);
+        $this->redis()->del($groupKey);
+        Toolkit::trace("$num keys removed");
+        return $num;
     }
 }
