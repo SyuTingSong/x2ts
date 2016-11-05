@@ -111,8 +111,84 @@ class Utils extends Component {
         return Toolkit::random_chars($length);
     }
 
+    /**
+     * @param string       $url
+     * @param string|array $body
+     * @param array        $headers
+     *
+     * @return array|bool
+     */
+    public function curlPost(string $url, $body, array $headers = []) {
+        $c = $this->curlInit($url, $headers);
+        curl_setopt($c, CURLOPT_POST, true);
+        curl_setopt($c, CURLOPT_POSTFIELDS, $body);
+
+        $r = curl_exec($c);
+        curl_close($c);
+        if (false === $r) {
+            return false;
+        }
+
+        return $this->parseHttpResponse($r);
+    }
+
+    public function curlGet(string $url, array $headers = []) {
+        $c = $this->curlInit($url, $headers);
+
+        $r = curl_exec($c);
+        curl_close($c);
+        if (false === $r) {
+            return false;
+        }
+
+        return $this->parseHttpResponse($r);
+    }
+
     private function hash_ssha(string $password):string {
         $salt = random_bytes(6);
         return '{SSHA}' . base64_encode(sha1($password . $salt, true) . $salt);
+    }
+
+    /**
+     * @param  string $r
+     *
+     * @return array
+     */
+    private function parseHttpResponse(string $r):array {
+        list($header, $body) = explode("\r\n\r\n", $r, 2);
+        $headerList = explode("\r\n", $header);
+        $statusLine = array_shift($headerList);
+        $statusCode = (int) explode(' ', $statusLine)[1];
+        $headers = [];
+        foreach ($headerList as $header) {
+            list($key, $value) = explode(':', $header, 2);
+            $headers[$key] = $value;
+        }
+        return [
+            'status'  => $statusCode,
+            'headers' => $headers,
+            'body'    => $body,
+        ];
+    }
+
+    /**
+     * @param string $url
+     * @param array  $headers
+     *
+     * @return resource
+     */
+    private function curlInit(string $url, array $headers) {
+        $c = curl_init($url);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($c, CURLOPT_HEADER, true);
+        if (count($headers) > 0) {
+            $headerList = [];
+            foreach ($headers as $name => $value) {
+                $headerList[] = "$name: $value";
+            }
+            curl_setopt($c, CURLOPT_HTTPHEADER, $headerList);
+            return $c;
+        }
+        return $c;
     }
 }
