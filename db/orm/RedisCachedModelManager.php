@@ -317,7 +317,7 @@ final class RedisCachedModelManager implements IModelManager {
         return "rmcg:{$this->model->db->dbName}:{$this->model->tableName}:";
     }
 
-    private function removeAllRelatedCache() {
+    public function removeAllRelatedCache() {
         $groupKey = $this->group();
         $keysInGroup = $this->redis()->sMembers($groupKey);
         if (!$keysInGroup) {
