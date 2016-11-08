@@ -46,7 +46,6 @@ class Redis extends PhpRedis implements IComponent {
         $conf = static::$_conf;
 
         if ($conf['persistent']) {
-            Toolkit::log($conf, X_LOG_WARNING);
             if (!$this->pconnect(
                 $conf['host'],
                 $conf['port'],
