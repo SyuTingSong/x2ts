@@ -22,10 +22,12 @@ class Utils extends Component {
             'auth_key'       => 'uid',
             'admin_dn'       => 'cn=admin,dc=example,dc=com',
             'admin_password' => '',
+            'search_timeout' => 5,
+            'net_timeout'    => 5,
         ],
     ];
 
-    public function ldap_auth(string $username, string $password):bool {
+    public function ldap_auth(string $username, string $password): bool {
         $c = ldap_connect($this->conf['ldap']['host'], $this->conf['ldap']['port']);
         if (!$c) {
             throw new LDAPException('Cannot connect to LDAP server');
@@ -39,11 +41,7 @@ class Utils extends Component {
     }
 
     public function ldap_user(string $username) {
-        $c = ldap_connect($this->conf['ldap']['host'], $this->conf['ldap']['port']);
-        if (!$c) {
-            throw new LDAPException('Cannot connect to LDAP server');
-        }
-        ldap_set_option($c, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $c = $this->get_ldap_connection();
         $dn = "{$this->conf['ldap']['auth_key']}={$username},{$this->conf['ldap']['dn_base']}";
         Toolkit::trace("LDAP DN: $dn");
         $result = @ldap_read($c, $dn, 'objectClass=person');
@@ -52,6 +50,7 @@ class Utils extends Component {
             return null;
         }
         $entries = ldap_get_entries($c, $result);
+        Toolkit::trace($entries);
         ldap_free_result($result);
         ldap_close($c);
         if ($entries['count']) {
@@ -61,11 +60,7 @@ class Utils extends Component {
     }
 
     public function ldap_change_password(string $username, string $old_password, string $new_password) {
-        $c = ldap_connect($this->conf['ldap']['host'], $this->conf['ldap']['port']);
-        if (!$c) {
-            throw new LDAPException('Cannot connect to LDAP server');
-        }
-        ldap_set_option($c, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $c = $this->get_ldap_connection();
         $dn = "{$this->conf['ldap']['auth_key']}={$username},{$this->conf['ldap']['dn_base']}";
         Toolkit::trace("LDAP DN: $dn");
         $r = @ldap_bind($c, $dn, $old_password);
@@ -81,21 +76,38 @@ class Utils extends Component {
     }
 
     public function ldap_set_password(string $username, string $new_password) {
-        $c = ldap_connect($this->conf['ldap']['host'], $this->conf['ldap']['port']);
-        ldap_set_option($c, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $c = $this->get_ldap_connection();
         $dn = "{$this->conf['ldap']['auth_key']}={$username},{$this->conf['ldap']['dn_base']}";
         Toolkit::trace("LDAP DN: $dn");
         if (!ldap_bind($c, $this->conf['ldap']['admin_dn'], $this->conf['ldap']['admin_password'])) {
             return false;
         }
-        $r = ldap_modify($c, $dn, [
-            'userPassword' => $this->hash_ssha($new_password),
-        ]);
+        $entry = ['userPassword' => $this->hash_ssha($new_password)];
+        $r = @ldap_modify($c, $dn, $entry);
+        if ($r === false && 32 === ldap_errno($c)) {
+            $r = ldap_add($c, $dn, $entry);
+        }
         ldap_close($c);
         return $r;
     }
 
-    public function is_lan_ip(string $ipv4, bool $loopBack = false, bool $linkLocal = false):bool {
+    public function ldap_add_user(array $user) {
+        $c = $this->get_ldap_connection();
+        $dn = "{$this->conf['ldap']['auth_key']}={$user[$this->conf['ldap']['auth_key']]},{$this->conf['ldap']['dn_base']}";
+        Toolkit::trace("LDAP DN: $dn");
+        if (!ldap_bind($c, $this->conf['ldap']['admin_dn'], $this->conf['ldap']['admin_password'])) {
+            return false;
+        }
+        Toolkit::trace("adding user");
+        Toolkit::trace($user);
+        if (ldap_add($c, $dn, $user) === false) {
+            throw new LDAPException(ldap_error($c), ldap_errno($c));
+        }
+        ldap_close($c);
+        return true;
+    }
+
+    public function is_lan_ip(string $ipv4, bool $loopBack = false, bool $linkLocal = false): bool {
         $long = ip2long($ipv4);
         return
             $long & 0xff000000 === 0xa0000000 || // 10.0.0.0/8
@@ -107,7 +119,7 @@ class Utils extends Component {
             $long & 0xffff0000 === 0xa9fe0000;   // 169.254.0.0/16
     }
 
-    public function random_chars(int $length):string {
+    public function random_chars(int $length): string {
         return Toolkit::random_chars($length);
     }
 
@@ -144,7 +156,18 @@ class Utils extends Component {
         return $this->parseHttpResponse($r);
     }
 
-    private function hash_ssha(string $password):string {
+    private function get_ldap_connection() {
+        $c = ldap_connect($this->conf['ldap']['host'], $this->conf['ldap']['port']);
+        if (!$c) {
+            throw new LDAPException('Cannot connect to LDAP server');
+        }
+        ldap_set_option($c, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($c, LDAP_OPT_TIMELIMIT, $this->conf['ldap']['search_timeout']);
+        ldap_set_option($c, LDAP_OPT_NETWORK_TIMEOUT, $this->conf['ldap']['net_timeout']);
+        return $c;
+    }
+
+    private function hash_ssha(string $password): string {
         $salt = random_bytes(6);
         return '{SSHA}' . base64_encode(sha1($password . $salt, true) . $salt);
     }
@@ -154,7 +177,7 @@ class Utils extends Component {
      *
      * @return array
      */
-    private function parseHttpResponse(string $r):array {
+    private function parseHttpResponse(string $r): array {
         list($header, $body) = explode("\r\n\r\n", $r, 2);
         $headerList = explode("\r\n", $header);
         $statusLine = array_shift($headerList);
