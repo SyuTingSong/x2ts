@@ -165,6 +165,8 @@ abstract class Toolkit {
 
     public static $logFile;
 
+    public static $pid;
+
     public static function log($msg, $logLevel = X_LOG_DEBUG, $category = '', $traceIndex = 1) {
         $logLevelName = array('debug', 'notice', 'warning', 'error');
         $logLevelColor = array("\x1B[35m", "\x1B[32m", "\x1B[33m", "\x1B[31m");
@@ -203,10 +205,11 @@ abstract class Toolkit {
                 }
             }
             fprintf(
-                self::$logFile, "%s[%s][%s][%s]%s\x1B[0m\n",
+                self::$logFile, "%s[%s][%s][%d][%s]%s\x1B[0m\n",
                 $logLevelColor[$logLevel],
                 date('c'),
                 $logLevelName[$logLevel],
+                self::$pid ?? (self::$pid = posix_getpid()),
                 $category,
                 $logMessage
             );
