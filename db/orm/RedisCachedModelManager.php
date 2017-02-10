@@ -169,6 +169,7 @@ final class RedisCachedModelManager implements IModelManager {
                 );
                 $this->poolSet($model);
             }
+            Toolkit::trace("Saved one $key");
             return $model;
         }
     }
@@ -215,8 +216,9 @@ final class RedisCachedModelManager implements IModelManager {
                 $count,
                 $this->conf['duration']['count']
             );
+            Toolkit::trace("Saved count $key $count");
         } else {
-            Toolkit::trace("Hit count $key");
+            Toolkit::trace("Hit count $key $count");
         }
         return $count;
     }
@@ -258,11 +260,14 @@ final class RedisCachedModelManager implements IModelManager {
      * @return $this
      */
     private function poolSet(Model $model) {
+        $key = $this->getPoolKey($model->pk);
+        Toolkit::trace("Save $key to pool");
         $this->redis()->set(
-            $this->getPoolKey($model->pk),
+            $key,
             serialize($model),
             $this->conf['duration']['pool']
         );
+        Toolkit::trace("Saved pool $key");
         return $this;
     }
 
@@ -311,6 +316,7 @@ final class RedisCachedModelManager implements IModelManager {
             serialize($pks),
             $this->conf['duration']['many']
         );
+        Toolkit::trace("Saved many $key");
         return $models;
     }
 
