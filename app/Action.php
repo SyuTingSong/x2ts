@@ -21,6 +21,7 @@ use x2ts\ComponentFactory;
  * @property-read string $current_url
  * @property-read string $current_uri
  * @property-read bool   $is_ajax
+ * @property-read bool   $json_expected
  * @property-read bool   $is_https
  */
 abstract class Action {
@@ -435,6 +436,11 @@ abstract class Action {
 
     public function isAjax() {
         return $this->getIsAjax();
+    }
+
+    public function getJsonExpected() {
+        return $this->suffix === 'json' or
+            (stripos($this->header('Accept', ''), 'json') !== false);
     }
 
     public function getIsAjax():bool {

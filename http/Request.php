@@ -25,6 +25,7 @@ use x2ts\TGetterSetter;
  */
 class Request {
     use TGetterSetter;
+
     /**
      * @var array
      */
@@ -33,85 +34,80 @@ class Request {
     /**
      * @param string $name
      * @param string $default
+     *
      * @return mixed
      */
-    public function query($name=null, $default=null) {
-        if (is_null($name))
+    public function query($name = null, $default = null) {
+        if (null === $name) {
             return $_GET;
-        elseif (isset($_GET[$name]))
-            return $_GET[$name];
-        else
-            return $default;
+        }
+        return $_GET[$name] ?? $default;
     }
 
     /**
      * @param string $name
      * @param string $default
+     *
      * @return mixed
      */
-    public function cookie($name=null, $default=null) {
-        if (is_null($name))
+    public function cookie($name = null, $default = null) {
+        if (null === $name) {
             return $_COOKIE;
-        elseif (isset($_COOKIE[$name]))
-            return $_COOKIE[$name];
-        else
-            return $default;
+        }
+        return $_COOKIE[$name] ?? $default;
     }
 
     /**
      * @param string $name
      * @param string $default
+     *
      * @return mixed
      */
-    public function post($name=null, $default=null) {
-        if (is_null($name))
+    public function post($name = null, $default = null) {
+        if (null === $name) {
             return $_POST;
-        elseif (isset($_POST[$name]))
-            return $_POST[$name];
-        else
-            return $default;
+        }
+        return $_POST[$name] ?? $default;
     }
 
     /**
      * @param string $name
      * @param string $default
+     *
      * @return mixed
      */
-    public function header($name=null, $default=null) {
-        if (is_null($name))
+    public function header($name = null, $default = null) {
+        if (null === $name) {
             return $this->getHeader();
-        $key = 'HTTP_' . strtoupper($name);
-        if (isset($_SERVER[$key]))
-            return $_SERVER[$key];
-        else
-            return $default;
+        }
+        $key = 'HTTP_' . str_replace('-', '_', strtoupper($name));
+        return $_SERVER[$key] ?? $default;
     }
 
     /**
      * @param string $name
      * @param string $default
+     *
      * @return mixed
      */
-    public function file($name=null, $default=null) {
-        if (is_null($name))
+    public function file($name = null, $default = null) {
+        if (null === $name) {
             return $_FILES;
-        elseif (isset($_FILES[$name]))
-            return $_FILES[$name];
-        else
-            return $default;
+        }
+        return $_FILES[$name] ?? $default;
     }
 
     /**
      * @param string $name
      * @param string $default
+     *
      * @return mixed
      */
-    public function server($name=null, $default=null) {
-        if (is_null($name))
+    public function server($name = null, $default = null) {
+        if (null === $name) {
             return $_SERVER;
-        if (isset($_SERVER[$name]))
-            return $_SERVER[$name];
-        return $default;
+        }
+        return $_SERVER[$name] ?? $default;
     }
 
     /**
@@ -139,11 +135,12 @@ class Request {
      * @return array
      */
     public function getHeader() {
-        if (is_null($this->_header)) {
+        if (null === $this->_header) {
             $this->_header = [];
             foreach ($_SERVER as $key => $value) {
-                if (stripos($key, 'HTTP_') === 0)
+                if (stripos($key, 'HTTP_') === 0) {
                     $this->_header[substr($key, 5)] = $value;
+                }
             }
         }
         return $this->_header;
@@ -157,6 +154,6 @@ class Request {
     }
 
     public function getRawContent() {
-        return file_get_contents("php://input");
+        return file_get_contents('php://input');
     }
 }
