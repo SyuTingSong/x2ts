@@ -22,108 +22,113 @@ use x2ts\app\Action;
  * @method static daemon\Daemon daemon(array $settings = [])
  * @method static Utils utils()
  * @method static validator\Validator validator(array $vars)
+ * @method static event\Bus bus()
  */
 abstract class ComponentFactory extends Component {
-    protected static $_conf = array(
-        'component' => array(
-            'router'    => array(
-                'class'     => '\\x2ts\\app\\Router',
+    protected static $_conf = [
+        'component' => [
+            'bus'       => [
+                'class'     => event\Bus::class,
                 'singleton' => true,
-                'conf'      => array(
+            ],
+            'router'    => [
+                'class'     => app\Router::class,
+                'singleton' => true,
+                'conf'      => [
                     'defaultAction'         => '/index',
                     'actionSuffix'          => 'Action',
                     'actionSuffixOmissible' => false,
                     'baseUri'               => '/',
-                ),
-            ),
-            'db'        => array(
-                'class'     => '\\x2ts\\db\\SQLite',
+                ],
+            ],
+            'db'        => [
+                'class'     => db\SQLite::class,
                 'singleton' => true,
-                'conf'      => array(
+                'conf'      => [
                     'filename' => X_RUNTIME_ROOT . '/sqlite.db',
-                ),
-            ),
-            'model'     => array(
-                'class'     => '\x2ts\db\orm\Model',
+                ],
+            ],
+            'model'     => [
+                'class'     => db\orm\Model::class,
                 'singleton' => false,
-                'conf'      => array(
+                'conf'      => [
                     'tablePrefix'          => '',
                     'dbId'                 => 'db',
                     'enableCacheByDefault' => false,
-                    'schemaConf'           => array(
+                    'schemaConf'           => [
                         'schemaCacheId'       => 'cc',
                         'useSchemaCache'      => false,
                         'schemaCacheDuration' => 0,
-                    ),
-                    'manager'              => array(
-                        'class' => '\x2ts\db\orm\DirectModelManager',
+                    ],
+                    'manager'              => [
+                        'class' => db\orm\DirectModelManager::class,
                         'conf'  => [],
-                    ),
-                ),
-            ),
-            'cache'     => array(
-                'class'     => '\\x2ts\\RCache',
+                    ],
+                ],
+            ],
+            'cache'     => [
+                'class'     => cache\RCache::class,
                 'singleton' => true,
-                'conf'      => array(
+                'conf'      => [
                     'host'       => 'localhost',
                     'port'       => 11211,
                     'persistent' => true,
                     'keyPrefix'  => '',
-                ),
-            ),
-            'cc'        => array(
-                'class'     => '\\x2ts\\CICache',
+                ],
+            ],
+            'cc'        => [
+                'class'     => cache\CCache::class,
                 'singleton' => true,
-                'conf'      => array(
+                'conf'      => [
                     'cacheDir' => X_RUNTIME_ROOT . '/cache',
-                ),
-            ),
-            'token'     => array(
-                'class'     => '\\x2ts\\Token',
+                ],
+            ],
+            'token'     => [
+                'class'     => Token::class,
                 'singleton' => false,
-                'conf'      => array(
+                'conf'      => [
                     'saveComponentId' => 'cache',
                     'saveKeyPrefix'   => 'tok_',
                     'tokenLength'     => 16,
                     'autoSave'        => true,
                     'expireIn'        => 300,
-                ),
-            ),
-            'session'   => array(
-                'class'     => '\\x2ts\\Session',
+                ],
+            ],
+            'session'   => [
+                'class'     => Session::class,
                 'singleton' => false,
-                'conf'      => array(
+                'conf'      => [
                     'saveComponentId' => 'cache',
                     'saveKeyPrefix'   => 'session_',
                     'tokenLength'     => 16,
                     'autoSave'        => true,
                     'expireIn'        => 604800,
-                    'cookie'          => array(
+                    'cookie'          => [
                         'name'     => 'X_SESSION_ID',
                         'expireIn' => null,
                         'path'     => '/',
                         'domain'   => null,
                         'secure'   => null,
                         'httpOnly' => true,
-                    ),
-                ),
-            ),
-            'view'      => array(
-                'class'     => '\\x2ts\\view\\Hail',
+                    ],
+                ],
+            ],
+            'view'      => [
+                'class'     => view\Hail::class,
                 'singleton' => true,
-                'conf'      => array(
+                'conf'      => [
                     'tpl_dir'       => X_PROJECT_ROOT . '/protected/view',
                     'tpl_ext'       => 'html',
                     'compile_dir'   => X_RUNTIME_ROOT . '/compiled_template',
                     'enable_clip'   => false,
                     'cacheId'       => 'cc', // string to cache component id or false to disable cache
                     'cacheDuration' => 60, // page cache duration, second
-                ),
-            ),
-            'rpc'       => array(
-                'class'     => '\\x2ts\\rpc\\RPC',
+                ],
+            ],
+            'rpc'       => [
+                'class'     => rpc\RPC::class,
                 'singleton' => true,
-                'conf'      => array(
+                'conf'      => [
                     'connection' => [
                         'host'            => 'localhost',
                         'port'            => 5672,
@@ -136,12 +141,12 @@ abstract class ComponentFactory extends Component {
                     ],
                     'persistent' => false,
                     'maxRequest' => 500,
-                ),
-            ),
-            'daemon'    => array(
-                'class'     => '\\x2ts\\daemon\\Daemon',
+                ],
+            ],
+            'daemon'    => [
+                'class'     => daemon\Daemon::class,
                 'singleton' => false,
-                'conf'      => array(
+                'conf'      => [
                     'workerNum'     => 1,
                     'autoRestart'   => false,
                     'daemonize'     => false,
@@ -151,32 +156,32 @@ abstract class ComponentFactory extends Component {
                     'lockFile'      => X_RUNTIME_ROOT . '/daemon.lock',
                     'user'          => '',
                     'group'         => '',
-                ),
-            ),
-            'utils'     => array(
-                'class'     => '\\x2ts\\Utils',
+                ],
+            ],
+            'utils'     => [
+                'class'     => Utils::class,
                 'singleton' => true,
-                'conf'      => array(
-                    'ldap' => array(
+                'conf'      => [
+                    'ldap' => [
                         'host'           => 'localhost',
                         'port'           => 389,
                         'dn_base'        => 'ou=staffs,dc=example,dc=com',
                         'auth_key'       => 'uid',
                         'admin_dn'       => 'cn=admin,dc=example,dc=com',
                         'admin_password' => '',
-                    ),
-                ),
-            ),
-            'validator' => array(
-                'class'     => '\\x2ts\\validator\\Validator',
+                    ],
+                ],
+            ],
+            'validator' => [
+                'class'     => validator\Validator::class,
                 'singleton' => false,
-                'conf'      => array(
+                'conf'      => [
                     'encoding' => 'UTF-8',
                     'autoTrim' => true,
-                ),
-            ),
-        ),
-    );
+                ],
+            ],
+        ],
+    ];
 
     private static $_singletons;
 
@@ -205,7 +210,7 @@ abstract class ComponentFactory extends Component {
      * @return Action
      * @throws ActionNotBindingException
      */
-    public static function action($action = null):Action {
+    public static function action($action = null): Action {
         if ($action instanceof Action) {
             self::$_singletons['action'] = $action;
             return $action;
