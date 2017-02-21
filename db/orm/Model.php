@@ -82,6 +82,7 @@ class Model extends Component implements
      * @var array
      */
     public static $_conf = array(
+        'namespace'            => 'model',
         'tablePrefix'          => '',
         'dbId'                 => 'db',
         'enableCacheByDefault' => false,
@@ -119,7 +120,8 @@ class Model extends Component implements
      * @return Model
      */
     public static function getInstance($modelName) {
-        $className = "\\model\\" . Toolkit::toCamelCase($modelName, true);
+        $namespace = static::$_conf['namespace'];
+        $className = "\\{$namespace}\\" . Toolkit::toCamelCase($modelName, true);
         if (class_exists($className)) {
             return new $className($modelName);
         } else {
@@ -137,7 +139,7 @@ class Model extends Component implements
      */
     protected $_reflectionMMGetter;
 
-    public function getModelManager():IModelManager {
+    public function getModelManager(): IModelManager {
         if (null === $this->_reflectionMMGetter) {
             $this->_reflectionMMGetter = (new \ReflectionClass($this->conf['manager']['class']))
                 ->getMethod('getInstance');
@@ -423,8 +425,8 @@ class Model extends Component implements
 
     public function __isset($name) {
         return array_key_exists($name, $this->_properties)
-        || array_key_exists($name, $this->relations)
-        || ($getter = Toolkit::toCamelCase("get $name")) && method_exists($this, $getter);
+            || array_key_exists($name, $this->relations)
+            || ($getter = Toolkit::toCamelCase("get $name")) && method_exists($this, $getter);
     }
 
     public function __call($name, $args) {
