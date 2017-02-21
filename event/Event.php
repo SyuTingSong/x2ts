@@ -9,29 +9,59 @@
 namespace x2ts\event;
 
 
+use x2ts\app\Action;
 use x2ts\Toolkit;
 
 class Event {
-    public $name;
+    /**
+     * @var string
+     */
+    public $name = '';
 
+    /**
+     * @var mixed
+     */
     public $dispatcher;
 
+    /**
+     * @var Action
+     */
     public $action;
 
+    /**
+     * @var mixed
+     */
     public $state;
 
+    /**
+     * @var mixed
+     */
     public $data;
 
     private $stopped = false;
 
-    public function __construct(array $props = []) {
+    /**
+     * Event constructor.
+     *
+     * @param string $name
+     * @param array  $props
+     */
+    public function __construct(
+        string $name,
+        array $props = [
+            'action'     => null,
+            'dispatcher' => null,
+            'data'       => null,
+        ]
+    ) {
         foreach ($props as $key => $value) {
             $this->$key = $value;
         }
+        $this->name = $name;
     }
 
     public function __toString() {
-        return $this->name ?? '';
+        return $this->name;
     }
 
     public function stopAttaching($message) {
