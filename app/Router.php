@@ -17,6 +17,7 @@ class Router extends Component {
         'actionSuffix'          => 'Action',
         'actionSuffixOmissible' => false,
         'baseUri'               => '/',
+        'fallbackActionClass'   => false,
     );
 
     /**
@@ -66,6 +67,18 @@ class Router extends Component {
                     $action->run($pArgs);
                     return true;
                 }
+            }
+        }
+        $fbClass = $this->conf['fallbackActionClass'];
+        if ($fbClass && class_exists($fbClass)) {
+            $action = new $fbClass($req, $res, $suffix);
+            if ($action instanceof Action) {
+                if ($this->dispatch('PostRoute', $action, $suffix) === false) {
+                    return false;
+                }
+                ComponentFactory::action($action);
+                $action->run($pArgs);
+                return true;
             }
         }
         $res->setHeader('Status', 404, true, 404);
