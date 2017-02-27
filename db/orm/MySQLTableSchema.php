@@ -173,14 +173,14 @@ SQL
                 $relations[$relation->name] = $relation;
             }
         }
-        static::$tables[$this->name] = array(
+        static::$tables[$this->db->dbName][$this->name] = array(
             'columns'   => $columns,
             'keys'      => $keys,
             'relations' => $relations,
         );
         if ($this->conf['useSchemaCache']) {
             $key = $this->getHash();
-            $this->cache->set($key, static::$tables[$this->name], $this->conf['schemaCacheDuration']);
+            $this->cache->set($key, static::$tables[$this->db->dbName][$this->name], $this->conf['schemaCacheDuration']);
         }
     }
 }

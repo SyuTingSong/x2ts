@@ -54,28 +54,28 @@ abstract class TableSchema extends Component {
      * @return Column[]
      */
     public function getColumns() {
-        return static::$tables[$this->name]['columns'];
+        return static::$tables[$this->db->dbName][$this->name]['columns'];
     }
 
     /**
      * @return array
      */
     public function getColumnNames() {
-        return array_keys(static::$tables[$this->name]['columns']);
+        return array_keys(static::$tables[$this->db->dbName][$this->name]['columns']);
     }
 
     /**
      * @return array
      */
     public function getKeys() {
-        return static::$tables[$this->name]['keys'];
+        return static::$tables[$this->db->dbName][$this->name]['keys'];
     }
 
     /**
      * @return Relation[]
      */
     public function getRelations() {
-        return static::$tables[$this->name]['relations'];
+        return static::$tables[$this->db->dbName][$this->name]['relations'];
     }
 
     public function getCache() {
@@ -89,12 +89,12 @@ abstract class TableSchema extends Component {
     }
 
     public function init() {
-        if (!isset(static::$tables[$this->name])) {
+        if (!isset(static::$tables[$this->db->dbName][$this->name])) {
             if ($this->conf['useSchemaCache']) {
                 $key = $this->getHash();
                 $tableInfo = $this->cache->get($key);
                 if (!empty($tableInfo)) {
-                    static::$tables[$this->name] = $tableInfo;
+                    static::$tables[$this->db->dbName][$this->name] = $tableInfo;
                     return;
                 }
             }
