@@ -43,6 +43,7 @@ class ManyManyRelation extends Relation {
             $params
         );
 
+        Model::conf($model->conf);
         return Model::getInstance($this->foreignModelName)->sql(
             <<<SQL
 SELECT

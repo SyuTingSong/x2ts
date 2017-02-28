@@ -35,6 +35,7 @@ class HasManyRelation extends Relation {
         $params = array_merge($params, [
             ':_fk' => $model->properties[$this->property],
         ]);
+        Model::conf($model->conf);
         return Model::getInstance($this->foreignModelName)
             ->many($condition, $params, $offset, $limit);
     }

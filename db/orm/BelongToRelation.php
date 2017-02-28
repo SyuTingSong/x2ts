@@ -30,6 +30,7 @@ class BelongToRelation extends Relation {
     ) {
         Toolkit::trace("Relation load {$this->name}");
         if (null === $model->properties[$this->property]) {
+            Toolkit::trace("Property {$this->property} is null");
             return null;
         }
         $condition = $this->foreignTableField . '=:_fk' .
@@ -38,6 +39,7 @@ class BelongToRelation extends Relation {
         $params = array_merge($params, [
             ':_fk' => $model->properties[$this->property],
         ]);
+        Model::conf($model->conf);
         return Model::getInstance($this->foreignModelName)
             ->one($condition, $params);
     }
