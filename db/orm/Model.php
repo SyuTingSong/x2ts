@@ -282,7 +282,6 @@ class Model extends Component implements
      * @param string $modelName
      */
     public function __construct($modelName = null) {
-        $this->_builder = new SqlBuilder($this->db);
         $this->_modelName = $modelName ?? Toolkit::toCamelCase(
                 basename(str_replace('\\', '/', get_class($this))),
                 true
@@ -291,6 +290,7 @@ class Model extends Component implements
     }
 
     protected function init() {
+        $this->_builder = new SqlBuilder($this->db);
         $columns = $this->getTableSchema()->getColumns();
         foreach ($columns as $column) {
             $this->_properties[$column->name] = $column->defaultValue;
@@ -394,9 +394,6 @@ class Model extends Component implements
     }
 
     public function __get($name) {
-        if ($name === 'conf') {
-            return static::$_conf;
-        }
         $getter = Toolkit::toCamelCase("get $name");
         $snakeName = Toolkit::to_snake_case($name);
         if (method_exists($this, $getter)) {

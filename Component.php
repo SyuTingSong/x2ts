@@ -10,6 +10,7 @@ namespace x2ts;
  */
 abstract class Component implements IComponent {
     use TGetterSetter;
+    use TConfig;
 
     /**
      * @static
@@ -17,35 +18,8 @@ abstract class Component implements IComponent {
      */
     protected static $_conf;
 
-    protected static $_confObject;
-
-    /**
-     * @param array|null $conf
-     *
-     * @return \stdClass|array|null
-     */
-    public static function conf($conf = null) {
-        if (null !== $conf) {
-            if (is_array($conf)) {
-                Toolkit::override(static::$_conf, $conf);
-            } else if (is_string($conf)) {
-                return static::$_conf[$conf];
-            }
-        } else {
-            if (empty(static::$_confObject))
-                static::$_confObject = json_decode(json_encode(static::$_conf));
-            return static::$_confObject;
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function getConf() {
-        return static::$_conf;
-    }
-
     public function __construct() {
+        $this->saveHashedConfig();
         if (method_exists($this, 'init')) {
             call_user_func(array($this, 'init'));
         }

@@ -62,18 +62,11 @@ class MySQL extends Component implements IDataBase {
         return $this->_pdo;
     }
 
-    protected $_dbName = null;
-
-    public function __construct() {
-        $this->_dbName = static::$_conf['dbname'];
-        parent::__construct();
-    }
-
     /**
      * @return string
      */
     public function getDbName() {
-        return $this->_dbName;
+        return $this->conf['dbname'];
     }
 
     private function serializeArray($array) {
@@ -178,9 +171,9 @@ class MySQL extends Component implements IDataBase {
     }
 
     private function initPdo() {
-        $conf = $this->conf;
+        $conf = &$this->conf;
         $this->_pdo = new PDO (
-            "mysql:host={$conf['host']};port={$conf['port']};dbname={$this->_dbName};charset={$conf['charset']};",
+            "mysql:host={$conf['host']};port={$conf['port']};dbname={$conf['dbname']};charset={$conf['charset']};",
             $conf['user'],
             $conf['password'],
             array(

@@ -4,6 +4,7 @@ namespace x2ts;
 
 use InvalidArgumentException;
 use ReflectionClass;
+use stdClass;
 use x2ts\app\Action;
 
 /**
@@ -25,6 +26,9 @@ use x2ts\app\Action;
  * @method static event\Bus bus()
  */
 abstract class ComponentFactory extends Component {
+    /**
+     * @var array
+     */
     protected static $_conf = [
         'component' => [
             'bus'       => [
@@ -183,7 +187,35 @@ abstract class ComponentFactory extends Component {
         ],
     ];
 
-    private static $_singletons;
+    /**
+     * @var array
+     */
+    private static $_singletons = [];
+
+    /**
+     * @var stdClass
+     */
+    protected static $_confObject;
+
+    /**
+     * @param array|string|null $conf
+     *
+     * @return array|stdClass
+     */
+    public static function conf($conf = null) {
+        if (null !== $conf) {
+            if (is_array($conf)) {
+                Toolkit::override(static::$_conf, $conf);
+                return static::$_conf;
+            } else if (is_string($conf)) {
+                return static::$_conf[$conf];
+            }
+        }
+        if (!static::$_confObject instanceof stdClass) {
+            static::$_confObject = json_decode(json_encode(static::$_conf));
+        }
+        return static::$_confObject;
+    }
 
     /**
      * @param $componentId
@@ -226,6 +258,7 @@ abstract class ComponentFactory extends Component {
      * @param array  $args
      *
      * @return \x2ts\IComponent
+     * @throws \InvalidArgumentException
      * @throws \x2ts\ComponentNotFoundException
      */
     public static function __callStatic($name, $args) {
