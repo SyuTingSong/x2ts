@@ -59,6 +59,22 @@ class Utils extends Component {
         return null;
     }
 
+    public function ldap_mail(string $mail) {
+        $c = $this->get_ldap_connection();
+        $dn = "{$this->conf['ldap']['dn_base']}";
+        $filter="(mail=$mail)";
+        $justthese = array("uid","mail");
+        $result=ldap_search($c, $dn, $filter, $justthese);
+        $entries = ldap_get_entries($c, $result);
+        Toolkit::trace($entries);
+        ldap_free_result($result);
+        ldap_close($c);
+        if($entries["count"] > 0){
+            return true;
+        }
+        return false;
+    }
+
     public function ldap_change_password(string $username, string $old_password, string $new_password) {
         $c = $this->get_ldap_connection();
         $dn = "{$this->conf['ldap']['auth_key']}={$username},{$this->conf['ldap']['dn_base']}";
