@@ -583,19 +583,22 @@ class Model extends Component implements
     protected function getExportProperties() {
         $within = [];
         $without = [];
+        $base = null;
         foreach (static::$_export as $act) {
+            if ($act === 0) {
+                $base = [];
+                continue;
+            }
             $act = trim($act);
             if ($act[0] === '+') {
                 $within[] = trim(substr($act, 1));
             } elseif ($act[0] === '-') {
                 $without[] = trim(substr($act, 1));
-            } elseif ($act === 0) {
-                $base = [];
             } else {
                 $within[] = $act;
             }
         }
-        if (empty($base)) {
+        if (null === $base) {
             $base = array_keys($this->_properties);
         }
 
