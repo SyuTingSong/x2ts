@@ -141,10 +141,12 @@ abstract class Action {
      * @return mixed
      */
     public function session($name = null, $default = null) {
-        if (is_null($name))
+        if (null === $name) {
             return $_SESSION;
-        if (isset($_SESSION[$name]))
+        }
+        if (isset($_SESSION[$name])) {
             return $_SESSION[$name];
+        }
         return $default;
     }
 
@@ -168,6 +170,73 @@ abstract class Action {
      */
     public function post($name = null, $default = null) {
         return $this->request->post($name, $default);
+    }
+
+    /**
+     * @param array $args
+     *
+     * @return $this
+     * @internal param int $code
+     * @internal param string $message
+     * @internal param array $data
+     * @internal param string $goto
+     * @internal param string $tpl
+     *
+     */
+    public function smartOutput(...$args) {
+        if (count($args) === 1 && is_array($args[0])) {
+            $code = $args[0]['code'] ?? 0;
+            $message = $args[0]['message'] ?? null;
+            $data = $args[0]['data'] ?? null;
+            $goto = $args[0]['goto'] ?? null;
+            $tpl = $args[0]['tpl'] ?? null;
+        } else {
+            $code = $args[0] ?? 0;
+            $message = $args[1] ?? null;
+            $data = $args[2] ?? null;
+            $goto = $args[3] ?? null;
+            $tpl = $args[4] ?? null;
+        }
+        if ($this->is_ajax || $this->json_expected) {
+            Toolkit::trace('Output JSON');
+            $this->jsonError($code, $message, $data, $goto);
+        } else {
+            if (!empty($goto)) {
+                Toolkit::trace("Redirect to $goto");
+                $this->redirect($goto);
+            } else {
+                if (isset($message) && !isset($data['message'])) {
+                    $data['message'] = $message;
+                }
+                if ($tpl) {
+                    Toolkit::trace("Display with tpl $tpl");
+                    $this->display($tpl, $data);
+                } else {
+                    Toolkit::trace('Display');
+                    $this->display($data);
+                }
+            }
+        }
+        return $this;
+    }
+
+    public function smartInput() {
+        $contentType = strtolower($this->header('Content-Type', ''));
+        if ($contentType === '') {
+            return $this->query();
+        } elseif (
+            strpos($contentType, 'application/x-www-form-urlencoded') === 0 ||
+            strpos($contentType, 'multipart/form-data') === 0
+        ) {
+            return $this->post();
+        } elseif (
+            strpos($contentType, 'application/json') === 0 ||
+            strpos($contentType, 'text/json') === 0
+        ) {
+            return json_decode($this->request->getRawContent(), true) ?? [];
+        } else {
+            throw new UnsupportedContentTypeException("The Content-Type $contentType has not been supported yet.");
+        }
     }
 
     /**
@@ -229,8 +298,8 @@ abstract class Action {
     /**
      * @param string $name
      * @param string $value
-     * @param bool $replace
-     * @param int $status
+     * @param bool   $replace
+     * @param int    $status
      *
      * @return $this
      */
@@ -443,16 +512,16 @@ abstract class Action {
             (stripos($this->header('Accept', ''), 'json') !== false);
     }
 
-    public function getIsAjax():bool {
+    public function getIsAjax(): bool {
         return $this->query('ajax')
-        or strtolower($this->header('X_REQUESTED_WITH')) === 'xmlhttprequest';
+            or strtolower($this->header('X_REQUESTED_WITH')) === 'xmlhttprequest';
     }
 
     public function isHttps() {
         return $this->getIsHttps();
     }
 
-    public function getIsHttps():bool {
+    public function getIsHttps(): bool {
         return
             strtolower($this->header('X_FORWARDED_SSL')) === 'on' ||
             strtolower($this->header('X_FORWARDED_PROTO')) === 'https' ||
@@ -464,7 +533,7 @@ abstract class Action {
      *
      * @return string
      */
-    public function getClientIp():string {
+    public function getClientIp(): string {
         $s = $this->server();
         if (array_key_exists('HTTP_CLIENTIP', $s)) {
             if (!empty($s['HTTP_CLIENTIP'])) {
@@ -486,12 +555,12 @@ abstract class Action {
         return $s['REMOTE_ADDR'];
     }
 
-    public function getCurrentUrl():string {
+    public function getCurrentUrl(): string {
         return ($this->isHttps() ? 'https://' : 'http://') . $this->header('HOST') .
-        $this->server('REQUEST_URI');
+            $this->server('REQUEST_URI');
     }
 
-    public function getCurrentUri():string {
+    public function getCurrentUri(): string {
         return explode('?', $this->server('REQUEST_URI'), 2)[0];
     }
 }
