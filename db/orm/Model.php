@@ -581,7 +581,6 @@ class Model extends Component implements
     protected static $_export = [];
 
     protected function getExportProperties() {
-        $base = array_keys($this->_properties);
         $within = [];
         $without = [];
         foreach (static::$_export as $act) {
@@ -590,9 +589,14 @@ class Model extends Component implements
                 $within[] = trim(substr($act, 1));
             } elseif ($act[0] === '-') {
                 $without[] = trim(substr($act, 1));
+            } elseif ($act[0] === 0) {
+                $base = [];
             } else {
                 $within[] = $act;
             }
+        }
+        if (empty($base)) {
+            $base = array_keys($this->_properties);
         }
 
         return array_diff(array_merge($base, $within), $without);
