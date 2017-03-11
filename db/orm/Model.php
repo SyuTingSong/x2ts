@@ -589,7 +589,7 @@ class Model extends Component implements
                 $within[] = trim(substr($act, 1));
             } elseif ($act[0] === '-') {
                 $without[] = trim(substr($act, 1));
-            } elseif ($act[0] === 0) {
+            } elseif ($act === 0) {
                 $base = [];
             } else {
                 $within[] = $act;
