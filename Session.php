@@ -38,8 +38,12 @@ class Session extends Token {
     private static $sessionId;
     public static function getInstance(string $token = '') {
         $action = ComponentFactory::action();
-        $sessionId = self::$sessionId ?? '';
-        if ($auth = ComponentFactory::action()->header('Authorization')) {
+        $sessionId = '';
+        if ($token) {
+            $sessionId = $token;
+        } elseif (self::$sessionId) {
+            $sessionId = self::$sessionId;
+        } elseif ($auth = ComponentFactory::action()->header('Authorization')) {
             list ($method, $data) = explode(' ', $auth, 2);
             if (strtolower($method) === 'token') {
                 $sessionId = $data;
