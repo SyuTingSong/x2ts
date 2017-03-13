@@ -234,6 +234,8 @@ abstract class Action {
             strpos($contentType, 'text/json') === 0
         ) {
             return json_decode($this->request->getRawContent(), true) ?? [];
+        } elseif ($this->server('REQUEST_METHOD') === 'PUT') {
+            return $this->request->getRawContent();
         } else {
             throw new UnsupportedContentTypeException("The Content-Type $contentType has not been supported yet.");
         }
