@@ -2,6 +2,8 @@
 
 namespace x2ts;
 
+use SimpleXMLIterator;
+
 abstract class Toolkit {
     /**
      * @param $var
@@ -222,7 +224,7 @@ abstract class Toolkit {
         }
     }
 
-    public static function random_chars(int $length):string {
+    public static function random_chars(int $length): string {
         return substr(
             str_replace(['+', '/', '='], '', base64_encode(
                 random_bytes($length << 1)
