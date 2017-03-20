@@ -156,6 +156,7 @@ class Utils extends Component {
         if (false === $r) {
             return false;
         }
+        Toolkit::trace($r);
 
         return $this->parseHttpResponse($r);
     }
