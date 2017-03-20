@@ -43,6 +43,7 @@ abstract class ComponentFactory extends Component {
                     'actionSuffix'          => 'Action',
                     'actionSuffixOmissible' => false,
                     'baseUri'               => '/',
+                    'fallbackActionClass'   => false,
                 ],
             ],
             'db'        => [
