@@ -58,13 +58,17 @@ class RCache extends Component implements ICache {
     public function set($key, $value, $duration = 0) {
         Toolkit::trace("RCache Set $key");
         $s = is_numeric($value) ? $value : serialize($value);
-        $this->cache->set($key, $s, $duration);
+        if ($duration) {
+            $this->cache->set($key, $s, $duration);
+        } else {
+            $this->cache->set($key, $s);
+        }
     }
 
     /**
      * @param string $key
      *
-     * @return boolean
+     * @return void
      */
     public function remove($key) {
         Toolkit::trace("RCache remove '$key'");
