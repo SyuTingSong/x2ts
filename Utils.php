@@ -62,14 +62,14 @@ class Utils extends Component {
     public function ldap_mail(string $mail) {
         $c = $this->get_ldap_connection();
         $dn = "{$this->conf['ldap']['dn_base']}";
-        $filter="(mail=$mail)";
-        $justthese = array("uid","mail");
-        $result=ldap_search($c, $dn, $filter, $justthese);
+        $filter = "(mail=$mail)";
+        $justthese = array("uid", "mail");
+        $result = ldap_search($c, $dn, $filter, $justthese);
         $entries = ldap_get_entries($c, $result);
         Toolkit::trace($entries);
         ldap_free_result($result);
         ldap_close($c);
-        if($entries["count"] > 0){
+        if ($entries["count"] > 0) {
             return true;
         }
         return false;
@@ -151,6 +151,21 @@ class Utils extends Component {
         curl_setopt($c, CURLOPT_POST, true);
         curl_setopt($c, CURLOPT_POSTFIELDS, $body);
 
+        $r = curl_exec($c);
+        curl_close($c);
+        if (false === $r) {
+            return false;
+        }
+        Toolkit::trace($r);
+
+        return $this->parseHttpResponse($r);
+    }
+
+    public function curlPut(string $url, $body, array $headers = []) {
+        $c = $this->curlInit($url, $headers);
+        curl_setopt($c, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($c, CURLOPT_POST, true);
+        curl_setopt($c, CURLOPT_POSTFIELDS, $body);
         $r = curl_exec($c);
         curl_close($c);
         if (false === $r) {
