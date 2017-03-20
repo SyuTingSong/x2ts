@@ -64,6 +64,7 @@ class Token extends Component {
             $that->token = $token;
             $t = $that->saver->get($that->saveKey());
             if ($t instanceof Token) {
+                $that->isDestroy = true;
                 return self::$_tokens["$t"] = $t;
             } else {
                 $that->data = [];
@@ -89,7 +90,7 @@ class Token extends Component {
     }
 
     public function save() {
-        if (!$this->isDestroy) {
+        if (!$this->isDestroy && $this->expireIn) {
             $this->saver->set($this->saveKey(), $this, $this->expireIn);
             return true;
         }
@@ -110,7 +111,7 @@ class Token extends Component {
         }
     }
 
-    private function saveKey():string {
+    private function saveKey(): string {
         return $this->conf['saveKeyPrefix'] . $this->token;
     }
 
@@ -159,14 +160,14 @@ class Token extends Component {
 
     public function __isset($name) {
         return isset($this->data[$name]) ||
-        method_exists($this, Toolkit::toCamelCase("get $name"));
+            method_exists($this, Toolkit::toCamelCase("get $name"));
     }
 
     public function __unset($name) {
         $this->del($name);
     }
 
-    public function getSaver():ICache {
+    public function getSaver(): ICache {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentFactory::getComponent($this->conf['saveComponentId']);
     }
