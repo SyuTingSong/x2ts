@@ -82,16 +82,15 @@ class Model extends Component implements
      * @var array
      */
     public static $_conf = array(
-        'namespace'            => 'model',
-        'tablePrefix'          => '',
-        'dbId'                 => 'db',
-        'enableCacheByDefault' => false,
-        'schemaConf'           => array(
+        'namespace'   => 'model',
+        'tablePrefix' => '',
+        'dbId'        => 'db',
+        'schemaConf'  => array(
             'schemaCacheId'       => 'cc',
             'useSchemaCache'      => false,
             'schemaCacheDuration' => 0,
         ),
-        'manager'              => array(
+        'manager'     => array(
             'class' => '\x2ts\db\orm\DirectModelManager',
             'conf'  => [],
         ),

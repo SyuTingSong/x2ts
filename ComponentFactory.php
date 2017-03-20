@@ -56,22 +56,22 @@ abstract class ComponentFactory extends Component {
                 'class'     => db\orm\Model::class,
                 'singleton' => false,
                 'conf'      => [
-                    'tablePrefix'          => '',
-                    'dbId'                 => 'db',
-                    'enableCacheByDefault' => false,
-                    'schemaConf'           => [
+                    'namespace'   => 'model',
+                    'tablePrefix' => '',
+                    'dbId'        => 'db',
+                    'schemaConf'  => [
                         'schemaCacheId'       => 'cc',
-                        'useSchemaCache'      => false,
-                        'schemaCacheDuration' => 0,
+                        'useSchemaCache'      => true,
+                        'schemaCacheDuration' => 300,
                     ],
-                    'manager'              => [
+                    'manager'     => [
                         'class' => db\orm\DirectModelManager::class,
                         'conf'  => [],
                     ],
                 ],
             ],
             'cache'     => [
-                'class'     => cache\RCache::class,
+                'class'     => cache\MCache::class,
                 'singleton' => true,
                 'conf'      => [
                     'host'       => 'localhost',
@@ -208,7 +208,7 @@ abstract class ComponentFactory extends Component {
                 Toolkit::override(static::$_conf, $conf);
                 return static::$_conf;
             } else if (is_string($conf)) {
-                return static::$_conf[$conf];
+                return static::$_conf[$conf] ?? null;
             }
         }
         if (!static::$_confObject instanceof stdClass) {
