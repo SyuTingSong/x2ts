@@ -287,7 +287,12 @@ final class RedisCachedModelManager implements IModelManager {
             $pk = $pks[$i];
             $serialized_model = $serialized_models[$i];
             if (false === $serialized_model) {
-                $model = clone $this->load($pk);
+                $loadedModel = $this->load($pk);
+                if ($loadedModel instanceof Model) {
+                    $model = clone $loadedModel;
+                } else {
+                    continue;
+                }
             } else {
                 $model = unserialize($serialized_models[$i]);
             }
