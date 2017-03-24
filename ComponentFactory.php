@@ -34,6 +34,7 @@ abstract class ComponentFactory extends Component {
             'bus'       => [
                 'class'     => event\Bus::class,
                 'singleton' => true,
+                'conf'      => [],
             ],
             'router'    => [
                 'class'     => app\Router::class,
