@@ -17,12 +17,15 @@ class Bus extends Component {
      * @param string   $eventName
      * @param callable $callback
      * @param mixed    $state
+     *
+     * @return $this
      */
     public function on(string $eventName, callable $callback, $state = null) {
         $this->_events[$eventName][] = array(
             'callback' => $callback,
             'state'    => $state,
         );
+        return $this;
     }
 
     /**
