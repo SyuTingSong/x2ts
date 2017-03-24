@@ -201,7 +201,7 @@ final class RedisCachedModelManager implements IModelManager {
      * @param string $condition
      * @param array  $params
      *
-     * @return int|bool
+     * @return int
      */
     public function count($condition = null, $params = array()) {
         Toolkit::trace('Redis cached count');
@@ -219,6 +219,7 @@ final class RedisCachedModelManager implements IModelManager {
             Toolkit::trace("Saved count $key $count");
         } else {
             Toolkit::trace("Hit count $key $count");
+            $count = (int) $count;
         }
         return $count;
     }
