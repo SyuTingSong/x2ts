@@ -17,7 +17,7 @@ use x2ts\app\Action;
  * @method static cache\MCache cache()
  * @method static cache\CCache cc()
  * @method static Token token(string $token = '')
- * @method static Session session()
+ * @method static Session session(string $sessionId = '')
  * @method static view\Hail view()
  * @method static rpc\RPC rpc(string $package = null)
  * @method static daemon\Daemon daemon(array $settings = [])
@@ -209,7 +209,9 @@ abstract class ComponentFactory extends Component {
             if (is_array($conf)) {
                 Toolkit::override(static::$_conf, $conf);
                 return static::$_conf;
-            } else if (is_string($conf)) {
+            }
+
+            if (is_string($conf)) {
                 return static::$_conf[$conf] ?? null;
             }
         }
@@ -222,7 +224,8 @@ abstract class ComponentFactory extends Component {
     /**
      * @param $componentId
      *
-     * @return bool|Component
+     * @return bool|IComponent
+     * @throws \InvalidArgumentException
      * @throws \x2ts\ComponentNotFoundException
      */
     public static function getComponent($componentId) {
@@ -248,11 +251,13 @@ abstract class ComponentFactory extends Component {
         if ($action instanceof Action) {
             self::$_singletons['action'] = $action;
             return $action;
-        } else if (self::$_singletons['action'] instanceof Action) {
-            return self::$_singletons['action'];
-        } else {
-            throw new ActionNotBindingException('action is available after routing');
         }
+
+        if (self::$_singletons['action'] instanceof Action) {
+            return self::$_singletons['action'];
+        }
+
+        throw new ActionNotBindingException('action is available after routing');
     }
 
     /**
@@ -287,13 +292,14 @@ abstract class ComponentFactory extends Component {
      * @throws InvalidArgumentException
      * @return \x2ts\IComponent
      */
-    public static function getInstance($class, $args = array(), $conf = array()) {
+    public static function getInstance($class, array $args = [], array $conf = []) {
         $rfClass = new ReflectionClass($class);
-        if ($rfClass->isSubclassOf('x2ts\IComponent')) {
-            $rfClass->getMethod("conf")->invoke(null, $conf);
+        if ($rfClass->isSubclassOf(IComponent::class)) {
+            $rfClass->getMethod('conf')->invoke(null, $conf);
             if ($rfClass->hasMethod('getInstance')) {
                 return $rfClass->getMethod('getInstance')->invokeArgs(null, $args);
             }
+            /** @noinspection  PhpIncompatibleReturnTypeInspection */
             return $rfClass->newInstanceArgs($args);
         }
         throw new InvalidArgumentException("class $class is not an instance of x2ts\\IComponent");
