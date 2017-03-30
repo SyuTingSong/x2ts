@@ -211,6 +211,9 @@ class Utils extends Component {
      */
     private function parseHttpResponse(string $r): array {
         list($header, $body) = explode("\r\n\r\n", $r, 2);
+        if (strpos($header, '100 Continue') !== false) {
+            list($header, $body) = explode("\r\n\r\n", $body, 2);
+        }
         $headerList = explode("\r\n", $header);
         $statusLine = array_shift($headerList);
         $statusCode = (int) explode(' ', $statusLine)[1];
