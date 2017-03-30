@@ -44,7 +44,7 @@ class Session extends Token {
         } elseif (self::$sessionId) {
             $sessionId = self::$sessionId;
         } elseif ($auth = ComponentFactory::action()->header('Authorization')) {
-            list ($method, $data) = @explode(' ', $auth, 2);
+            @list ($method, $data) = explode(' ', $auth, 2);
             if (strtolower($method) === 'token' && $data) {
                 $sessionId = $data;
                 Toolkit::trace("SessionId from token: $sessionId");
